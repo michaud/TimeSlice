@@ -123,8 +123,6 @@ function animate()
                     this.meshList[index].material.uniforms.tDiffuse.texture.needsUpdate = true;
                 }
 
-                composer = new THREE.EffectComposer(renderer, this.meshList[index]);
-                
                 var panelDistance = -(index * frameManipulation.FrameDistance);
                 this.meshList[index].position = new THREE.Vector3(0, 0, panelDistance);
             }
