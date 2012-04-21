@@ -1,0 +1,299 @@
+<!doctype html>
+<html>
+<head>
+	<title>learningthree.js boiler plate for three.js</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<script src="js/jquery-1.7.1.min.js"></script>
+	<script src="vendor/three.js/Three.js"></script>
+	<script src="vendor/three.js/Detector.js"></script>
+	<script src="vendor/three.js/Stats.js"></script>
+	<script src="vendor/threex/THREEx.screenshot.js"></script>
+	<script src="vendor/threex/THREEx.FullScreen.js"></script>
+	<script src="vendor/threex/THREEx.WindowResize.js"></script>
+	<script src="vendor/threex.dragpancontrols.js"></script>
+	<script src="js/Queue.compressed.js"></script>
+	<link href="css/main.css" rel="stylesheet" />
+</head>
+<body>
+	<!-- three.js container -->
+	<div id="container" style="z-index: -1;">
+	</div>
+	<!-- info on screen display -->
+	<div id="info">
+		<div class="bottom" id="inlineDoc">
+			- <i>p</i> for screenshot
+		</div>
+	</div>
+	<section id="app" style="z-index: 100;">
+		<canvas id="SnapShotPanel" width="320" height="240" style="position: absolute; top: 0"></canvas>
+		<video id="monitor" width="160" height="120" style="position: absolute; top: 0" autoplay></video>
+		<div id="ControlPanel">
+			<fieldset>
+				<legend>Cam position</legend>
+				<label for="CamPosX"><span>cam x:</span><input id="CamPosX" name="CamPosX" type="range" min="-100" max="100" /></label>
+				<label for="CamPosY"><span>cam y:</span><input id="CamPosY" name="CamPosY" type="range" min="-100" max="100" /></label>
+				<label for="CamPosZ"><span>cam z:</span><input id="CamPosZ" name="CamPosZ" type="range" min="-100" max="100" /></label>
+			</fieldset>
+			<fieldset>
+				<legend>Cam rotation</legend>
+				<label for="CamRotX"><span>cam x:</span><input id="CamRotX" name="CamRotX" type="range" min="-100" max="100" /></label>
+				<label for="CamRotY"><span>cam y:</span><input id="CamRotY" name="CamRotY" type="range" min="-100" max="100" /></label>
+				<label for="CamRotX"><span>cam z:</span><input id="CamRotZ" name="CamRotZ" type="range" min="-100" max="100" /></label>
+			</fieldset>
+			<fieldset>
+				<legend>Cam look-at</legend>
+				<label for="CamAtX"><span>cam x:</span><input id="CamAtX" name="CamAtX" type="range" min="-900" max="900" /></label>
+				<label for="CamAtY"><span>cam y:</span><input id="CamAtY" name="CamAtY" type="range" min="-900" max="900" /></label>
+				<label for="CamAtZ"><span>cam z:</span><input id="CamAtZ" name="CamAtZ" type="range" min="-900" max="900" /></label>
+			</fieldset>
+		</div>
+	</section>
+	<script type="text/javascript">
+		$( document ).ready( function ()
+		{
+			var stats, scene, renderer;
+			var camera, controls;
+			var video;
+			var canvas;
+			var videoTexture;
+			var texturePainting;
+			var mesh;
+			var imageList = new Array();
+			var meshes = new Array();
+			var snapShotTimerId;
+
+			var CamPosX, CamPosY, CamPosZ;
+			var CamRotX, CamRotY, CamRotZ;
+			var CamAtX, CamAtY, CamAtZ;
+
+			function initializeControls()
+			{
+				$( "#CamPosX" ).change( function ( eventObject )
+				{
+					CamPosX = eventObject.srcElement.valueAsNumber;
+				} );
+
+				$( "#CamPosY" ).change( function ( eventObject )
+				{
+					CamPosY = eventObject.srcElement.valueAsNumber;
+				} );
+
+				$( "#CamPosZ" ).change( function ( eventObject )
+				{
+					CamPosZ = eventObject.srcElement.valueAsNumber;
+				} );
+
+				$( "#CamRotX" ).change( function ( eventObject )
+				{
+					CamRotX = eventObject.srcElement.valueAsNumber;
+				} );
+
+				$( "#CamRotY" ).change( function ( eventObject )
+				{
+					CamRotY = eventObject.srcElement.valueAsNumber;
+				} );
+
+				$( "#CamRotZ" ).change( function ( eventObject )
+				{
+					CamRotZ = eventObject.srcElement.valueAsNumber;
+				} );
+
+				$( "#CamAtX" ).change( function ( eventObject )
+				{
+					CamAtX = eventObject.srcElement.valueAsNumber;
+				} );
+
+				$( "#CamAtY" ).change( function ( eventObject )
+				{
+					CamAtY = eventObject.srcElement.valueAsNumber;
+				} );
+
+				$( "#CamAtZ" ).change( function ( eventObject )
+				{
+					CamAtZ = eventObject.srcElement.valueAsNumber;
+				} );
+			}
+
+			function createRenderer()
+			{
+				if ( Detector.webgl )
+				{
+					renderer = new THREE.WebGLRenderer( {
+						antialias: true, // to get smoother output
+						preserveDrawingBuffer: true	// to allow screenshot
+					} );
+
+					renderer.setClearColorHex( 0x111111, 1 );
+				}
+				else
+				{
+					Detector.addGetWebGLMessage();
+					return true;
+				}
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.getElementById( 'container' ).appendChild( renderer.domElement );
+			}
+
+			function createVideoSource()
+			{
+				if ( navigator.webkitGetUserMedia )
+				{
+					navigator.webkitGetUserMedia( 'video', gotStream, noStream );
+					video = document.getElementById( 'monitor' );
+
+					function gotStream( stream )
+					{
+						console.log( "got stream" );
+						video.src = webkitURL.createObjectURL( stream );
+						console.log( video.src );
+						video.onerror = function ()
+						{
+							console.log( "video.onerror" );
+							stream.stop();
+							streamError();
+						};
+					}
+
+					function noStream()
+					{
+						console.log( "No camera available" );
+
+						//document.getElementById( 'errorMessage' ).textContent = 'No camera available.';
+					}
+
+					function streamError()
+					{
+						console.log( "Camera error" );
+					}
+
+				} else
+				{
+					console.log( "No native camera support available" );
+				}
+			}
+
+			function addStats()
+			{
+				// add Stats.js - https://github.com/mrdoob/stats.js
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.bottom = '0px';
+				document.body.appendChild( stats.domElement );
+			}
+
+			function createScene()
+			{
+				// create a scene
+				scene = new THREE.Scene();
+			}
+
+			function addCamera()
+			{
+				// put a camera in the scene
+				camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.set( 400, 0, 850 );
+				camera.lookAt( new THREE.Vector3( 0, 0, 0 ) );
+				controls = new THREE.FirstPersonControls( camera );
+				scene.add( camera );
+			}
+
+
+			function setWindowControls()
+			{
+				// transparently support window resize
+				THREEx.WindowResize.bind( renderer, camera );
+				// allow 'p' to make screenshot
+				THREEx.Screenshot.bindKey( renderer );
+				// allow 'f' to go fullscreen where this feature is supported
+				if ( THREEx.FullScreen.available() )
+				{
+					THREEx.FullScreen.bindKey();
+					document.getElementById( 'inlineDoc' ).innerHTML += "- <i>f</i> for fullscreen";
+				}
+			}
+
+			function updateCamera()
+			{
+				camera.position = new THREE.Vector3( CamPosX, CamPosY, CamPosZ );
+				camera.lookAt( new THREE.Vector3( CamAtX, CamAtY, CamAtZ ) );
+			}
+
+			// init the scene
+			function init()
+			{
+				//createSnapShot();
+				createVideoSource();
+				createRenderer();
+				addStats();
+				createScene();
+				addCamera();
+				//createCameraControls();
+				//controls = THREEx.DragPanControls( camera );
+				setWindowControls();
+			}
+
+			// animation loop
+			function animate()
+			{
+				// loop on request animation loop
+				// - it has to be at the begining of the function
+				// - see details at http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
+				requestAnimationFrame( animate );
+
+				updateCamera();
+
+				snapshot();
+				// do the render
+				if ( video.readyState === video.HAVE_ENOUGH_DATA )
+				{
+					//console.log( "HAVE_ENOUGH_DATA" );
+					render();
+				}
+
+				// update stats
+				stats.update();
+			}
+
+			// render the scene
+			function render()
+			{
+				var imageListLength = imageList.length;
+
+				for ( var index = 0; index < imageListLength; index++ )
+				{
+
+					var panelTexture = new THREE.Texture( imageList[index], THREE.UVMapping, THREE.RepeatWrapping, THREE.RepeatWrapping );
+					panelTexture.needsUpdate = true;
+
+					if ( meshes.length < imageListLength )
+					{
+						var material = new THREE.MeshBasicMaterial( { color: 0xe0e0e0 } ); // new THREE.MeshBasicMaterial( { color: 0x8888 } ); // map: panelTexture 
+						material.overdraw = true;
+						var geometry = new THREE.PlaneGeometry( 512, 256 );
+						var newMesh = new THREE.Mesh( geometry, material );
+
+						newMesh.position = new THREE.Vector3( 0, 0, imageListLength * 50 );
+						meshes.push( newMesh );
+						scene.add( newMesh );
+					}
+					//					else
+					//					{
+					//						meshes[index].material.map = panelTexture;
+					//					}
+				}
+
+				// update camera controls
+				//cameraControls.update();
+
+				// actually render the scene
+				renderer.render( scene, camera );
+			}
+
+			initializeControls();
+			if ( !init() ) animate();
+		} )
+	</script>
+</body>
+</html>
