@@ -1,0 +1,71 @@
+body {
+	overflow	: hidden;
+	padding		: 0;
+	margin		: 0;
+
+	color		: #222;
+	background-color: #BBB;
+	font-family	: arial;
+	font-size	: 100%;
+}
+#info .top {
+	position	: absolute;
+	top		: 0px;
+	width		: 100%;
+	padding		: 5px;
+	text-align	: center;
+}
+#info a {
+	color		: #66F;
+	text-decoration	: none;
+}
+#info a:hover {
+	text-decoration	: underline;
+}
+#info .bottom {
+	position	: absolute;
+	bottom		: 0px;
+	right		: 5px;
+	padding		: 5px;
+}
+
+#ControlPanel
+{
+    position: absolute; 
+    top: 0;
+    background-color: rgba(0,0,0,0.7);
+    padding: 5px 5px 1px 5px;
+}
+
+#ControlPanel fieldset {
+	border: 1px solid rgba(255,255,255,0.3);
+	margin: 0 0 5px 0;
+	padding: 4px;
+	color: White;
+}
+
+#ControlPanel legend {
+	padding: 0 10px;
+	font-size: 12px;
+	font-weight: bold;
+}
+
+#ControlPanel label {
+	display: block;
+	font-size: 12px;
+	font-weight: bold;
+}
+
+#ControlPanel label span {
+	margin-right: 8px;
+	display: inline-block;
+	width: 70px;
+}
+
+#ControlPanel input[type="range"] {
+	margin: 0;
+	border: none;
+	background: none;
+	line-height: 12px;
+	vertical-align: text-top;
+}
