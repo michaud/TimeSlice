@@ -72,12 +72,12 @@ function initLight( ascene )
     ascene.add( light );
 }
 
-function createCamera( ascene, initCamPosX, initCamPosY, initCamPosZ, initCamAtX, initCamAtY, initCamAtZ )
+function createCamera( ascene, cameraData )
 {
     // put a camera in the scene
     var newCamera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 1, 5000 );
-    newCamera.position.set( initCamPosX, initCamPosY, initCamPosZ );
-    newCamera.lookAt( new THREE.Vector3( initCamAtX, initCamAtY, initCamAtZ ) );
+    newCamera.position.set(cameraData.posx, cameraData.posy, cameraData.posz);
+    newCamera.lookAt(new THREE.Vector3(cameraData.atx, cameraData.aty, cameraData.atz));
     ascene.add( newCamera );
 
     // create a camera contol
