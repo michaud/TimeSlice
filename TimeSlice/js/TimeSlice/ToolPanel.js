@@ -80,7 +80,7 @@ TimeSlice.ToolPanel.prototype = {
             transparency: 1.0
         };
 
-        this.FrameManipulation.add(this.frame, 'distance', 0, 2000);
+        this.FrameManipulation.add(this.frame, 'distance', 0, 500);
         this.FrameManipulation.add(this.frame, 'transparency', 0.0, 1.0);
         this.FrameManipulation.open();
     }
