@@ -18,6 +18,7 @@ var panel;
 var frameSource;
 var monitor;
 var meshList = [];
+var planeList = [];
 var planeWidth = 320;
 var planeHeight = 240;
 
@@ -29,42 +30,12 @@ function init()
 
     $("#ControlPanel").append(toolPanel.domElement);
 
-    frameSource = new TimeSlice.VideoFrameSource(document.getElementById('monitor'), 30, 300, planeWidth, planeHeight);
+    frameSource = new TimeSlice.VideoFrameSource(document.getElementById("monitor"), 30, 300, planeWidth, planeHeight);
     renderer = getRenderer();
     stats = addStats();
     scene = createScene();
     camera = createCamera(scene, panel.camera);
     initScreenControl(renderer, camera);
-}
-
-function getPlaneContainer(index, imageList)
-{
-    var planeContainer = null;
-
-    if (index > this.meshList.length - 1)
-    {
-        planeContainer = {
-            cameraRTT: new THREE.OrthographicCamera(window.innerWidth / -2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / -2, -10000, 10000),
-            sceneRTT: new THREE.Scene(),
-            panelTextureRTT: new THREE.Texture(imageList[index], undefined, undefined, undefined, THREE.LinearFilter, THREE.LinearFilter),
-            materialRTT: null,
-            planeRTT: new THREE.PlaneGeometry(planeWidth, planeHeight),
-            MeshRTT: null,
-            RenderTargetRTT : new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat } )
-        };
-
-        planeContainer.cameraRTT.position.z = 100;
-        planeContainer.sceneRTT.add(planeContainer.cameraRTT);
-        planeContainer.materialRTT = new THREE.MeshBasicMaterial({ map: planeContainer.panelTextureRTT, overdraw: true, transparent: true });
-        planeContainer.MeshRTT = new THREE.Mesh(planeContainer.planeRTT, planeContainer.materialRTT);
-        planeContainer.MeshRTT.position.z = -100;
-        planeContainer.MeshRTT.doubleSided = true;
-        planeContainer.sceneRTT.add(planeContainer.MeshRTT);
-        
-        renderer.render(planeContainer.sceneRTT, planeContainer.cameraRTT, planeContainer.RenderTargetRTT, true);
-    }
-
-    return planeContainer;
 }
 
 function updatePlanes()
@@ -81,30 +52,55 @@ function updatePlanes()
             {
                 imgTarget = imageList[index];
 
-                var planeC = getPlaneContainer(index, imageList);
+                var planeContainer = null;
 
-                if (this.meshList.length < imageListLength)
+                if (this.planeList.length < imageListLength)
                 {
-                    var panelTexture = new THREE.Texture(imgTarget, undefined, undefined, undefined, THREE.LinearFilter, THREE.LinearFilter);
-                    panelTexture.generateMipmaps = false;
-                    panelTexture.needsUpdate = true;
+                    planeContainer = {
+                        cameraRTT: new THREE.OrthographicCamera(window.innerWidth / -2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / -2, -10000, 10000),
+                        sceneRTT: new THREE.Scene(),
+                        panelTextureRTT: new THREE.Texture(imageList[index], undefined, undefined, undefined, THREE.LinearFilter, THREE.LinearFilter),
+                        materialRTT: null,
+                        planeRTT: new THREE.PlaneGeometry(planeWidth, planeHeight),
+                        MeshRTT: null,
+                        RenderTargetRTT: new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat }),
+                        panelTexture: null,
+                        material : new THREE.MeshBasicMaterial({ map: null, overdraw: true, transparent: true }),
+                        geometry: new THREE.PlaneGeometry(planeWidth, planeHeight),
+                        mesh: null
+                    };
 
-                    var material = new THREE.MeshBasicMaterial({ map: panelTexture, overdraw: true, transparent: true });
-                    var geometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
+                    planeContainer.cameraRTT.position.z = 100;
+                    planeContainer.sceneRTT.add(planeContainer.cameraRTT);
+                    planeContainer.materialRTT = new THREE.MeshBasicMaterial({ map: planeContainer.panelTextureRTT, overdraw: true, transparent: true });
+                    planeContainer.MeshRTT = new THREE.Mesh(planeContainer.planeRTT, planeContainer.materialRTT);
+                    planeContainer.MeshRTT.position.z = -100;
+                    planeContainer.MeshRTT.doubleSided = true;
+                    planeContainer.sceneRTT.add(planeContainer.MeshRTT);
 
-                    var newMesh = new THREE.Mesh(geometry, material);
-                    newMesh.doubleSided = true;
-                    this.meshList.push(newMesh);
-                    scene.add(newMesh);
+                    planeContainer.panelTexture = new THREE.Texture(imgTarget, undefined, undefined, undefined, THREE.LinearFilter, THREE.LinearFilter)
+                    planeContainer.panelTexture.generateMipmaps = false;
+                    planeContainer.panelTexture.needsUpdate = true;
+                    planeContainer.material.map = planeContainer.RenderTargetRTT;
+                    planeContainer.mesh = new THREE.Mesh(planeContainer.geometry, planeContainer.material);
+                    planeContainer.mesh.doubleSided = true;
+
+                    scene.add(planeContainer.mesh);
+
+                    planeList.push(planeContainer);
                 }
                 else
                 {
-                    this.meshList[index].material.map.image = imgTarget;
-                    this.meshList[index].material.map.needsUpdate = true;
+                    planeContainer = planeList[index];
+                    planeContainer.panelTextureRTT.image = imageList[index];
+                    planeContainer.panelTextureRTT.needsUpdate = true;
+
                 }
 
-                var panelDistance = -(index * panel.frame.distance); //  frameManipulation.FrameDistance
-                this.meshList[index].position = new THREE.Vector3(0, 0, panelDistance);
+                renderer.render(planeContainer.sceneRTT, planeContainer.cameraRTT, planeContainer.RenderTargetRTT, true);
+
+                var panelDistance = -(index * panel.frame.distance);
+                this.planeList[index].mesh.position = new THREE.Vector3(0, 0, panelDistance);
             }
         }
     }

@@ -33,7 +33,7 @@ TimeSlice.VideoFrameSource.prototype = {
         if ( navigator.webkitGetUserMedia )
         {
             var curVideo = this.video;
-            navigator.webkitGetUserMedia( 'video', function ( stream )
+            navigator.webkitGetUserMedia({ video: true }, function(stream)
             {
                 console.log( "got stream" );
                 curVideo.src = webkitURL.createObjectURL( stream );
