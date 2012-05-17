@@ -9,7 +9,7 @@
 /// <reference path="../libs/datgui/dat.gui.js" />
 /// <reference path="ToolPanel.js" />
 /// <reference path="../libs/jquery-1.7.1.min.js" />
-
+//http://localhost:58998/TimeSlice/index.html
 var stats, scene, renderer, composer;
 var camera, cameraControl;
 var controlPanel;
@@ -21,6 +21,8 @@ var meshList = [];
 var planeList = [];
 var planeWidth = 320;
 var planeHeight = 240;
+var composerScene;
+var rtParameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBuffer: true };
 
 // init the scene
 function init()
@@ -40,6 +42,8 @@ function init()
 
 function updatePlanes()
 {
+    composer = new THREE.EffectComposer(renderer, new THREE.WebGLRenderTarget(200, 200, rtParameters));
+
     var imageList = frameSource.getFrames();
    
     if (imageList !== null)
@@ -57,13 +61,13 @@ function updatePlanes()
                 if (this.planeList.length < imageListLength)
                 {
                     planeContainer = {
-                        cameraRTT: new THREE.OrthographicCamera(window.innerWidth / -2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / -2, -10000, 10000),
+                        cameraRTT: new THREE.OrthographicCamera(planeWidth / -2, planeWidth / 2, planeHeight / 2, planeHeight / -2, -10000, 10000),
                         sceneRTT: new THREE.Scene(),
                         panelTextureRTT: new THREE.Texture(imgTarget, undefined, undefined, undefined, THREE.LinearFilter, THREE.LinearFilter),
                         materialRTT: null,
                         planeRTT: new THREE.PlaneGeometry(planeWidth, planeHeight),
                         MeshRTT: null,
-                        RenderTargetRTT: new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat }),
+                        RenderTargetRTT: new THREE.WebGLRenderTarget(planeWidth, planeHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat }),
                         material : new THREE.MeshBasicMaterial({ map: null, overdraw: true, transparent: true }),
                         geometry: new THREE.PlaneGeometry(planeWidth, planeHeight),
                         mesh: null
@@ -79,6 +83,18 @@ function updatePlanes()
                     planeContainer.material.map = planeContainer.RenderTargetRTT;
                     planeContainer.mesh = new THREE.Mesh(planeContainer.geometry, planeContainer.material);
                     planeContainer.mesh.doubleSided = true;
+
+                    var renderModel = new THREE.RenderPass(planeContainer.sceneRTT, planeContainer.cameraRTT);
+                    var effectBloom = new THREE.BloomPass(0.5);
+
+                    //var effectScreen = new THREE.ScreenPass();
+
+                    composer.addPass(renderModel);
+                    composer.addPass(effectBloom);
+                    //composer.addPass(effectScreen);
+                    var effectScreen = new THREE.ShaderPass(THREE.ShaderExtras["screen"]);
+                    effectScreen.renderToScreen = true;
+                    composer.addPass(effectScreen);
 
                     scene.add(planeContainer.mesh);
 
@@ -132,6 +148,7 @@ function animate()
 // render the scene
 function render()
 {
+    composer.render(0.5);
     // actually render the scene
     renderer.render(scene, camera);
 
