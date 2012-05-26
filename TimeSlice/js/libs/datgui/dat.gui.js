@@ -2866,7 +2866,7 @@ dat.GUI = dat.gui.GUI = (function (css, saveDialogueContents, styleSheet, contro
 ".dg .c{float:left;width:75%}" +
 ".dg .c input[type=text]{border:0;margin-top:1px;padding:0;width:100%;float:right; font-size:9px}" +
 ".dg .has-slider input[type=text]{width:20%;margin-left:0}" +
-".dg .slider{float:left;width:83%;margin-left:-5px;margin-right:0;height:10px;margin-top:2px}" +
+".dg .slider{float:left;width:82%;margin-left:-5px;margin-right:0;height:10px;margin-top:2px}" +
 ".dg .slider-fg{height:100%}" +
 ".dg .c input[type=checkbox]{margin-top:9px}" +
 ".dg .c select{margin-top:5px}" +

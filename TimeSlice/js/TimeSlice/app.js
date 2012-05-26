@@ -5,11 +5,9 @@
 /// <reference path="../../vendor/three.js/postprocessing/ShaderPass.js" />
 /// <reference path="TimeLineShaders.js" />
 /// <reference path="FrameManipulation.js" />
-/// <reference path="../libs/glfx.js" />
 /// <reference path="../libs/datgui/dat.gui.js" />
 /// <reference path="ToolPanel.js" />
 /// <reference path="../libs/jquery-1.7.1.min.js" />
-//http://localhost:58998/TimeSlice/index.html
 var stats, scene, renderer, composer;
 var camera, cameraControl;
 var controlPanel;
@@ -22,6 +20,7 @@ var planeList = [];
 var planeWidth = 320;
 var planeHeight = 240;
 var composerScene;
+var delta = 0.01;
 var rtParameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBuffer: true };
 
 // init the scene
@@ -40,10 +39,59 @@ function init()
     initScreenControl(renderer, camera);
 }
 
+function getTextureSceneContainer(imgTarget)
+{
+    var cameraRTT = new THREE.OrthographicCamera(planeWidth / -2, planeWidth / 2, planeHeight / 2, planeHeight / -2, -10000, 10000);
+    cameraRTT.position.z = 100;
+
+    var sceneRTT = new THREE.Scene();
+    sceneRTT.add(cameraRTT);
+
+    var renderTargetTexture = new THREE.WebGLRenderTarget(planeWidth, planeHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat });
+    var panelTextureRTT = new THREE.Texture(imgTarget, undefined, undefined, undefined, THREE.LinearFilter, THREE.LinearFilter);
+    var materialRTT = new THREE.MeshBasicMaterial({ map: panelTextureRTT, overdraw: true, transparent: true });
+    var planeRTT = new THREE.PlaneGeometry(planeWidth, planeHeight);
+    
+    var meshRTT = new THREE.Mesh(planeRTT, materialRTT);
+    meshRTT.position.z = -100;
+    meshRTT.rotation.x = Math.PI/3;
+    meshRTT.doubleSided = true;
+
+    sceneRTT.add(meshRTT);
+
+				var sceneRenderPass = new THREE.RenderPass(sceneRTT, cameraRTT);
+
+				var composerScene = new THREE.EffectComposer(renderer, renderTargetTexture);
+				composerScene.addPass(sceneRenderPass);
+
+				var shaderVignette = THREE.ShaderExtras["vignette"];
+				var effectVignette = new THREE.ShaderPass( shaderVignette );
+				//effectVignette.uniforms[ "offset" ].value = 0.5;
+				//effectVignette.uniforms[ "darkness" ].value = 0.2;
+				effectVignette.renderToScreen = true;
+
+				var effectDotScreen = new THREE.DotScreenPass( new THREE.Vector2( 0, 0 ), 0.5, 0.2 );
+
+				var renderScene = new THREE.TexturePass( composerScene.renderTarget2 );
+
+				composer2 = new THREE.EffectComposer(renderer, renderTargetTexture);
+
+				composer2.addPass( renderScene );
+				composer2.addPass( effectDotScreen );
+				composer2.addPass( effectVignette );
+
+    return {
+        sceneRTT : sceneRTT,
+        panelTextureRTT : panelTextureRTT,
+        cameraRTT: cameraRTT,
+        renderTargetTexture: renderTargetTexture,
+        composerScene: composerScene,
+        composer2: composer2
+    };
+}
+
 function updatePlanes()
 {
-    composer = new THREE.EffectComposer(renderer, new THREE.WebGLRenderTarget(200, 200, rtParameters));
-
     var imageList = frameSource.getFrames();
    
     if (imageList !== null)
@@ -60,41 +108,17 @@ function updatePlanes()
 
                 if (this.planeList.length < imageListLength)
                 {
-                    planeContainer = {
-                        cameraRTT: new THREE.OrthographicCamera(planeWidth / -2, planeWidth / 2, planeHeight / 2, planeHeight / -2, -10000, 10000),
-                        sceneRTT: new THREE.Scene(),
-                        panelTextureRTT: new THREE.Texture(imgTarget, undefined, undefined, undefined, THREE.LinearFilter, THREE.LinearFilter),
-                        materialRTT: null,
-                        planeRTT: new THREE.PlaneGeometry(planeWidth, planeHeight),
-                        MeshRTT: null,
-                        RenderTargetRTT: new THREE.WebGLRenderTarget(planeWidth, planeHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat }),
-                        material : new THREE.MeshBasicMaterial({ map: null, overdraw: true, transparent: true }),
-                        geometry: new THREE.PlaneGeometry(planeWidth, planeHeight),
-                        mesh: null
-                    };
+                    planeContainer = getTextureSceneContainer(imgTarget);
 
-                    planeContainer.cameraRTT.position.z = 100;
-                    planeContainer.sceneRTT.add(planeContainer.cameraRTT);
-                    planeContainer.materialRTT = new THREE.MeshBasicMaterial({ map: planeContainer.panelTextureRTT, overdraw: true, transparent: true });
-                    planeContainer.MeshRTT = new THREE.Mesh(planeContainer.planeRTT, planeContainer.materialRTT);
-                    planeContainer.MeshRTT.position.z = -100;
-                    planeContainer.MeshRTT.doubleSided = true;
-                    planeContainer.sceneRTT.add(planeContainer.MeshRTT);
-                    planeContainer.material.map = planeContainer.RenderTargetRTT;
-                    planeContainer.mesh = new THREE.Mesh(planeContainer.geometry, planeContainer.material);
-                    planeContainer.mesh.doubleSided = true;
+                    planeContainer.material = new THREE.MeshBasicMaterial({ color: 0xffffff, map: planeContainer.renderTargetTexture });
 
-                    var renderModel = new THREE.RenderPass(planeContainer.sceneRTT, planeContainer.cameraRTT);
-                    var effectBloom = new THREE.BloomPass(0.5);
+                    planeContainer.plane = new THREE.PlaneGeometry(planeWidth, planeHeight);
 
-                    //var effectScreen = new THREE.ScreenPass();
+                    planeContainer.mesh = new THREE.Mesh(planeContainer.plane, planeContainer.material);
+                    planeContainer.mesh.rotation.x = Math.PI / 2;
 
-                    composer.addPass(renderModel);
-                    composer.addPass(effectBloom);
-                    //composer.addPass(effectScreen);
-                    var effectScreen = new THREE.ShaderPass(THREE.ShaderExtras["screen"]);
-                    effectScreen.renderToScreen = true;
-                    composer.addPass(effectScreen);
+                    planeContainer.doubleSided = true;
+
 
                     scene.add(planeContainer.mesh);
 
@@ -105,13 +129,10 @@ function updatePlanes()
                     planeContainer = planeList[index];
                     planeContainer.panelTextureRTT.image = imageList[index];
                     planeContainer.panelTextureRTT.needsUpdate = true;
-
                 }
 
-                renderer.render(planeContainer.sceneRTT, planeContainer.cameraRTT, planeContainer.RenderTargetRTT, true);
-
                 var panelDistance = -(index * panel.frame.distance);
-                this.planeList[index].mesh.position = new THREE.Vector3(0, 0, panelDistance);
+                planeContainer.mesh.position = new THREE.Vector3(0, 0, panelDistance);
             }
         }
     }
@@ -148,7 +169,17 @@ function animate()
 // render the scene
 function render()
 {
-    composer.render(0.5);
+    var planeListlength = this.planeList.length;
+    for (var ind = 0; ind < planeListlength; ind++)
+    {
+        if (this.planeList)
+        {
+            renderer.render(this.planeList[ind].sceneRTT, this.planeList[ind].cameraRTT, this.planeList[ind].renderTargetTexture, true);
+            this.planeList[ind].composerScene.render(delta);
+            this.planeList[ind].composer2.render(delta);
+
+        }
+    }
     // actually render the scene
     renderer.render(scene, camera);
 
