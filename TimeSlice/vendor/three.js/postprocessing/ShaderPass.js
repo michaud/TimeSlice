@@ -25,6 +25,7 @@ THREE.ShaderPass = function( shader, textureID ) {
 };
 
 THREE.ShaderPass.prototype = {
+    uniforms :  null,
 
 	render: function ( renderer, writeBuffer, readBuffer, delta ) {
 

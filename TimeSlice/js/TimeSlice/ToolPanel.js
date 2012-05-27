@@ -4,10 +4,18 @@ var TimeSlice = TimeSlice || {};
 TimeSlice.ToolPanel = function(panel)
 {
     this.tools = panel;
-    
+
     this.CameraManipulation = this.tools.addFolder("Camera");
+    this.CameraManipulation.open();
+
     this.FrameManipulation = this.tools.addFolder("Frame");
+    this.FrameManipulation.open();
+
     this.SliceManipulation = this.tools.addFolder("Slice");
+    this.SliceManipulation.open();
+
+    this.shaderControls = this.tools.addFolder("Shadercontrols");
+    this.shaderControls.open();
 
     this.initializeControls();
 };
@@ -18,9 +26,11 @@ TimeSlice.ToolPanel.prototype = {
     CameraManipulation: null,
     FrameManipulation: null,
     SliceManipulation: null,
+    shaderControls: null,
     camera: null,
     slice: null,
     frame: null,
+    shaders: [],
 
     initializeControls: function()
     {
@@ -52,7 +62,6 @@ TimeSlice.ToolPanel.prototype = {
         this.CameraManipulation.add(this.camera, 'atx', -2000, 2000);
         this.CameraManipulation.add(this.camera, 'aty', -2000, 2000);
         this.CameraManipulation.add(this.camera, 'atz', -2000, 2000);
-        this.CameraManipulation.open();
 
         this.slice =
         {
@@ -70,7 +79,6 @@ TimeSlice.ToolPanel.prototype = {
         this.SliceManipulation.add(this.slice, 'rotx', 0, 2 * Math.PI);
         this.SliceManipulation.add(this.slice, 'roty', 0, 2 * Math.PI);
         this.SliceManipulation.add(this.slice, 'rotz', 0, 2 * Math.PI);
-        this.SliceManipulation.open();
 
         var initFrameDistance = 10;
         var initFrameTransparency = 1.0;
@@ -82,6 +90,22 @@ TimeSlice.ToolPanel.prototype = {
 
         this.FrameManipulation.add(this.frame, 'distance', 0, 500);
         this.FrameManipulation.add(this.frame, 'transparency', 0.0, 1.0);
-        this.FrameManipulation.open();
+
+
+
+        this.shaderControls.addFolder("BrightnessContrast");
+
+
+        var bcshadervals =
+        {
+            brightness: 0.5,
+            contrast: 0.5
+        }
+
+        this.shaders.push(bcshadervals);
+
+        this.shaderControls.add(bcshadervals, 'brightness', 0.0, 1.0);
+        this.shaderControls.add(bcshadervals, 'contrast', 0.0, 1.0);
     }
 };
+

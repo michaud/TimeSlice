@@ -20,7 +20,7 @@ var planeList = [];
 var planeWidth = 320;
 var planeHeight = 240;
 var composerScene;
-var delta = 0.01;
+var delta = 0.9;
 var rtParameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBuffer: true };
 
 // init the scene
@@ -54,31 +54,30 @@ function getTextureSceneContainer(imgTarget)
     
     var meshRTT = new THREE.Mesh(planeRTT, materialRTT);
     meshRTT.position.z = -100;
-    meshRTT.rotation.x = Math.PI/3;
+    meshRTT.rotation.x = Math.PI / 3;
+    meshRTT.rotation.y = Math.PI;
+    meshRTT.rotation.z = Math.PI;
     meshRTT.doubleSided = true;
 
     sceneRTT.add(meshRTT);
 
-				var sceneRenderPass = new THREE.RenderPass(sceneRTT, cameraRTT);
+	var sceneRenderPass = new THREE.RenderPass(sceneRTT, cameraRTT);
 
-				var composerScene = new THREE.EffectComposer(renderer, renderTargetTexture);
-				composerScene.addPass(sceneRenderPass);
+	var composerScene = new THREE.EffectComposer(renderer, renderTargetTexture);
+	composerScene.addPass(sceneRenderPass);
 
-				var shaderVignette = THREE.ShaderExtras["vignette"];
-				var effectVignette = new THREE.ShaderPass( shaderVignette );
-				//effectVignette.uniforms[ "offset" ].value = 0.5;
-				//effectVignette.uniforms[ "darkness" ].value = 0.2;
-				effectVignette.renderToScreen = true;
+	var renderScene = new THREE.TexturePass( composerScene.renderTarget2 );
 
-				var effectDotScreen = new THREE.DotScreenPass( new THREE.Vector2( 0, 0 ), 0.5, 0.2 );
+	var shaderComposer = new THREE.EffectComposer(renderer, renderTargetTexture);
 
-				var renderScene = new THREE.TexturePass( composerScene.renderTarget2 );
+	shaderComposer.addPass(renderScene);
 
-				composer2 = new THREE.EffectComposer(renderer, renderTargetTexture);
+	var effectBC = new THREE.ShaderPass(TimeSlice.ShaderExtras["brightnesscontrast"]);
+	effectBC.uniforms.tDiffuse = new THREE.Texture(imgTarget);
 
-				composer2.addPass( renderScene );
-				composer2.addPass( effectDotScreen );
-				composer2.addPass( effectVignette );
+	effectBC.uniforms.brightness.value = panel.shaders[0].brightness;
+	effectBC.uniforms.contrast.value = panel.shaders[0].contrast;
+	shaderComposer.addPass(effectBC);
 
     return {
         sceneRTT : sceneRTT,
@@ -86,7 +85,8 @@ function getTextureSceneContainer(imgTarget)
         cameraRTT: cameraRTT,
         renderTargetTexture: renderTargetTexture,
         composerScene: composerScene,
-        composer2: composer2
+        shaderComposer: shaderComposer,
+        effectBC: effectBC
     };
 }
 
@@ -119,7 +119,6 @@ function updatePlanes()
 
                     planeContainer.doubleSided = true;
 
-
                     scene.add(planeContainer.mesh);
 
                     planeList.push(planeContainer);
@@ -130,6 +129,9 @@ function updatePlanes()
                     planeContainer.panelTextureRTT.image = imageList[index];
                     planeContainer.panelTextureRTT.needsUpdate = true;
                 }
+
+                planeContainer.effectBC.uniforms.brightness.value = panel.shaders[0].brightness;
+                planeContainer.effectBC.uniforms.contrast.value = panel.shaders[0].contrast;
 
                 var panelDistance = -(index * panel.frame.distance);
                 planeContainer.mesh.position = new THREE.Vector3(0, 0, panelDistance);
@@ -176,75 +178,16 @@ function render()
         {
             renderer.render(this.planeList[ind].sceneRTT, this.planeList[ind].cameraRTT, this.planeList[ind].renderTargetTexture, true);
             this.planeList[ind].composerScene.render(delta);
-            this.planeList[ind].composer2.render(delta);
+            this.planeList[ind].shaderComposer.render(delta);
 
         }
     }
     // actually render the scene
     renderer.render(scene, camera);
 
-//    if (this.meshList[0] !== undefined)
-//    {
-//        var textureMonitor = document.getElementById("textureMonitor");
-//        var ctx = textureMonitor.getContext('2d');
-//        ctx.drawImage(this.meshList[0].material.uniforms.tDiffuse.texture.image, 0, 0, 40, 30);
-//    }
-//    //renderer.clear();
-    //composer.render();
 }
 
 if (!init())
 {
     animate();
 }
-
-//				var element = document.createElement( "canvas" );
-//				var ctx = element.getContext( "2d" );
-//				ctx.drawImage( imgTarget, 0, 0, frameSource.snapshotWidth, frameSource.snapshotHeight );
-//				ctx.createImageData( frameSource.snapshotWidth, frameSource.snapshotHeight );
-//				var imageData = ctx.getImageData( 0, 0, frameSource.snapshotWidth, frameSource.snapshotHeight );
-// create a new batch of pixels with the same
-// dimensions as the image:
-//				var temp = imageData;
-
-//                var canvas = fx.canvas();
-//                var texture = canvas.texture(imgTarget);
-//                canvas.draw(texture).brightnessContrast(-0.16, 0.87).update();
-////                var newImag = new Image();
-//                var cnvData = canvas.toDataURL('image/png');
-//                newImag.src = cnvData;
-
-//                var vertShader = TimeSlice.ShaderExtras.sepia.vertexShader; //  THREE.ShaderExtras.sepia.vertexShader;
-//                var fragShader = TimeSlice.ShaderExtras.sepia.fragmentShader;
-//                var attributes = {};
-//                var uniforms = TimeSlice.ShaderExtras.sepia.uniforms;
-//                uniforms.tDiffuse.texture = new THREE.Texture(imageTarget);
-//                uniforms.tDiffuse.value = 1;
-//                uniforms.amount.value = 1.0;
-
-//                var material = new THREE.ShaderMaterial(
-//                {
-//                    uniforms: uniforms,
-//                    attributes: attributes,
-//                    vertexShader: vertShader,
-//                    fragmentShader: fragShader
-//                });
-
-//                    var vertShader = TimeSlice.ShaderExtras.sepia.vertexShader;//  THREE.ShaderExtras.sepia.vertexShader;
-//                    var fragShader = TimeSlice.ShaderExtras.sepia.fragmentShader;
-//                    var attributes = {};
-//                    var uniforms = TimeSlice.ShaderExtras.sepia.uniforms;
-//                    uniforms.tDiffuse.texture = panelTexture;
-//                    uniforms.tDiffuse.value = 1;
-//                    uniforms.amount.value = frameManipulation.FrameTransparency;
-
-//                    var material = new THREE.ShaderMaterial(
-//                    {
-//                        uniforms: uniforms,
-//                        attributes: attributes,
-//                        vertexShader: vertShader,
-//                        fragmentShader: fragShader
-//                    });
-
-//                    
-//                    material.opacity = { type: "f", value: 0.1 };
