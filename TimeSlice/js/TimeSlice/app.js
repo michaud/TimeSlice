@@ -21,7 +21,7 @@ var planeWidth = 320;
 var planeHeight = 240;
 var composerScene;
 var delta = 0.9;
-var rtParameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBuffer: true };
+var rtParameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, stencilBuffer: true };
 
 // init the scene
 function init()
@@ -47,8 +47,8 @@ function getTextureSceneContainer(imgTarget)
     var sceneRTT = new THREE.Scene();
     sceneRTT.add(cameraRTT);
 
-    var renderTargetTexture = new THREE.WebGLRenderTarget(planeWidth, planeHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat });
-    var panelTextureRTT = new THREE.Texture(imgTarget, undefined, undefined, undefined, THREE.LinearFilter, THREE.LinearFilter);
+    var renderTargetTexture = new THREE.WebGLRenderTarget(planeWidth, planeHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat });
+    var panelTextureRTT = new THREE.Texture(imgTarget);
     var materialRTT = new THREE.MeshBasicMaterial({ map: panelTextureRTT, overdraw: true, transparent: true });
     var planeRTT = new THREE.PlaneGeometry(planeWidth, planeHeight);
     
@@ -77,6 +77,10 @@ function getTextureSceneContainer(imgTarget)
 
 	effectBC.uniforms.brightness.value = panel.shaders[0].brightness;
 	effectBC.uniforms.contrast.value = panel.shaders[0].contrast;
+	effectBC.uniforms.transparency.value = panel.shaders[0].transparency;
+	effectBC.uniforms.transparent.value = panel.shaders[0].transparent;
+	effectBC.uniforms.borw.value = panel.shaders[0].borw;
+
 	shaderComposer.addPass(effectBC);
 
     return {
@@ -110,14 +114,14 @@ function updatePlanes()
                 {
                     planeContainer = getTextureSceneContainer(imgTarget);
 
-                    planeContainer.material = new THREE.MeshBasicMaterial({ color: 0xffffff, map: planeContainer.renderTargetTexture });
+                    planeContainer.material = new THREE.MeshBasicMaterial({ overdraw: true, map: planeContainer.renderTargetTexture, transparent: true });
 
                     planeContainer.plane = new THREE.PlaneGeometry(planeWidth, planeHeight);
 
                     planeContainer.mesh = new THREE.Mesh(planeContainer.plane, planeContainer.material);
                     planeContainer.mesh.rotation.x = Math.PI / 2;
 
-                    planeContainer.doubleSided = true;
+                    planeContainer.doubleSided = false;
 
                     scene.add(planeContainer.mesh);
 
@@ -132,6 +136,11 @@ function updatePlanes()
 
                 planeContainer.effectBC.uniforms.brightness.value = panel.shaders[0].brightness;
                 planeContainer.effectBC.uniforms.contrast.value = panel.shaders[0].contrast;
+                planeContainer.effectBC.uniforms.transparency.value = panel.shaders[0].transparency;
+                planeContainer.effectBC.uniforms.transparent.value = panel.shaders[0].transparent;
+                planeContainer.effectBC.uniforms.borw.value = panel.shaders[0].borw;
+
+                planeContainer.material.opacity = panel.frame.transparency;
 
                 var panelDistance = -(index * panel.frame.distance);
                 planeContainer.mesh.position = new THREE.Vector3(0, 0, panelDistance);
@@ -159,7 +168,7 @@ function animate()
 
     // update camera controls
     //cameraControls.update();
-
+    //scene.
     // do the render
     render();
 

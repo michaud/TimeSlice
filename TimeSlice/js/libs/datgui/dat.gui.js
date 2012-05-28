@@ -2868,10 +2868,10 @@ dat.GUI = dat.gui.GUI = (function (css, saveDialogueContents, styleSheet, contro
 ".dg .has-slider input[type=text]{width:20%;margin-left:0}" +
 ".dg .slider{float:left;width:82%;margin-left:-5px;margin-right:0;height:10px;margin-top:2px}" +
 ".dg .slider-fg{height:100%}" +
-".dg .c input[type=checkbox]{margin-top:9px}" +
+".dg .c input[type=checkbox]{margin:0}" +
 ".dg .c select{margin-top:5px}" +
 ".dg .cr.function,.dg .cr.function .property-name,.dg .cr.function *,.dg .cr.boolean,.dg .cr.boolean *{cursor:pointer}" +
-".dg .selector{display:none;position:absolute;margin-left:-9px;margin-top:23px;z-index:10}" +
+".dg .selector{display:none;position:absolute;margin-left:-9px;margin-top:10px;z-index:10}" +
 ".dg .c:hover .selector,.dg .selector.drag{display:block}" +
 ".dg li.save-row{padding:0}" +
 ".dg li.save-row .button{display:inline-block;padding:0px 6px}" +

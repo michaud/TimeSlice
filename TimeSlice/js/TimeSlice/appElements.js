@@ -18,8 +18,10 @@ function getRenderer()
     {
         newRenderer = new THREE.WebGLRenderer( {
             antialias: true, // to get smoother output
-            preserveDrawingBuffer: true	// to allow screenshot
-        } );
+            preserveDrawingBuffer: true,	// to allow screenshot
+            clearColor: 0x000000,
+            //clearAlpha: 1
+        });
     }
     else
     {

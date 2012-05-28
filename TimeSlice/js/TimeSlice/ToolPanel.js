@@ -5,28 +5,23 @@ TimeSlice.ToolPanel = function(panel)
 {
     this.tools = panel;
 
+    this.SceneBackgroundFolder = this.tools.addFolder("Scene");
     this.CameraManipulation = this.tools.addFolder("Camera");
-    this.CameraManipulation.open();
-
     this.FrameManipulation = this.tools.addFolder("Frame");
-    this.FrameManipulation.open();
-
     this.SliceManipulation = this.tools.addFolder("Slice");
-    this.SliceManipulation.open();
-
     this.shaderControls = this.tools.addFolder("Shadercontrols");
-    this.shaderControls.open();
-
     this.initializeControls();
 };
 
 TimeSlice.ToolPanel.prototype = {
 
     tools: null,
+    SceneBackgroundFolder: null,
     CameraManipulation: null,
     FrameManipulation: null,
     SliceManipulation: null,
     shaderControls: null,
+    sceneBackground: null,
     camera: null,
     slice: null,
     frame: null,
@@ -34,6 +29,13 @@ TimeSlice.ToolPanel.prototype = {
 
     initializeControls: function()
     {
+        this.sceneBackground =
+        {
+            bgcolor : [0, 128, 255]
+        };
+
+        this.SceneBackgroundFolder.addColor(this.sceneBackground, 'bgcolor');
+
         this.camera =
         {
             posx: 387,
@@ -98,14 +100,26 @@ TimeSlice.ToolPanel.prototype = {
 
         var bcshadervals =
         {
-            brightness: 0.5,
-            contrast: 0.5
+            brightness: 0.0,
+            contrast: 1.0,
+            transparent: true,
+            transparency: 0.3,
+            borw: false
         }
 
         this.shaders.push(bcshadervals);
 
         this.shaderControls.add(bcshadervals, 'brightness', 0.0, 1.0);
         this.shaderControls.add(bcshadervals, 'contrast', 0.0, 1.0);
+        this.shaderControls.add(bcshadervals, 'transparent');
+        this.shaderControls.add(bcshadervals, 'transparency', 0.0, 1.0);
+        this.shaderControls.add(bcshadervals, 'borw');
+
+        this.SceneBackgroundFolder.open();
+        this.CameraManipulation.open();
+        this.FrameManipulation.open();
+        this.SliceManipulation.open();
+        this.shaderControls.open();
     }
 };
 
