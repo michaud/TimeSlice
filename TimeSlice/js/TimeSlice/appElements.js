@@ -20,6 +20,7 @@ function getRenderer()
             antialias: true, // to get smoother output
             preserveDrawingBuffer: true,	// to allow screenshot
             clearColor: 0x000000,
+            alpha : true
             //clearAlpha: 1
         });
     }

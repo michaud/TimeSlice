@@ -8,6 +8,8 @@
 /// <reference path="../libs/datgui/dat.gui.js" />
 /// <reference path="ToolPanel.js" />
 /// <reference path="../libs/jquery-1.7.1.min.js" />
+/// <reference path="VideoFrameSource.js" />
+
 var stats, scene, renderer, composer;
 var camera, cameraControl;
 var controlPanel;
@@ -26,12 +28,12 @@ var rtParameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilte
 // init the scene
 function init()
 {
-    toolPanel = new dat.GUI({autoPlace:false});
+    toolPanel = new dat.GUI({ autoPlace: false });
     panel = new TimeSlice.ToolPanel(toolPanel);
 
     $("#ControlPanel").append(toolPanel.domElement);
 
-    frameSource = new TimeSlice.VideoFrameSource(document.getElementById("monitor"), 30, 300, planeWidth, planeHeight);
+    frameSource = new TimeSlice.VideoFrameSource(document.getElementById("monitor"), 200, 1, planeWidth, planeHeight);
     renderer = getRenderer();
     stats = addStats();
     scene = createScene();
@@ -51,7 +53,7 @@ function getTextureSceneContainer(imgTarget)
     var panelTextureRTT = new THREE.Texture(imgTarget);
     var materialRTT = new THREE.MeshBasicMaterial({ map: panelTextureRTT, overdraw: true, transparent: true });
     var planeRTT = new THREE.PlaneGeometry(planeWidth, planeHeight);
-    
+
     var meshRTT = new THREE.Mesh(planeRTT, materialRTT);
     meshRTT.position.z = -100;
     meshRTT.rotation.x = Math.PI / 3;
@@ -61,31 +63,31 @@ function getTextureSceneContainer(imgTarget)
 
     sceneRTT.add(meshRTT);
 
-	var sceneRenderPass = new THREE.RenderPass(sceneRTT, cameraRTT);
+    var sceneRenderPass = new THREE.RenderPass(sceneRTT, cameraRTT);
 
-	var composerScene = new THREE.EffectComposer(renderer, renderTargetTexture);
-	composerScene.addPass(sceneRenderPass);
+    var composerScene = new THREE.EffectComposer(renderer, renderTargetTexture);
+    composerScene.addPass(sceneRenderPass);
 
-	var renderScene = new THREE.TexturePass( composerScene.renderTarget2 );
+    var renderScene = new THREE.TexturePass(composerScene.renderTarget2);
 
-	var shaderComposer = new THREE.EffectComposer(renderer, renderTargetTexture);
+    var shaderComposer = new THREE.EffectComposer(renderer, renderTargetTexture);
 
-	shaderComposer.addPass(renderScene);
+    shaderComposer.addPass(renderScene);
 
-	var effectBC = new THREE.ShaderPass(TimeSlice.ShaderExtras["brightnesscontrast"]);
-	effectBC.uniforms.tDiffuse = new THREE.Texture(imgTarget);
+    var effectBC = new THREE.ShaderPass(TimeSlice.ShaderExtras["brightnesscontrast"]);
+    effectBC.uniforms.tDiffuse = new THREE.Texture(imgTarget);
 
-	effectBC.uniforms.brightness.value = panel.shaders[0].brightness;
-	effectBC.uniforms.contrast.value = panel.shaders[0].contrast;
-	effectBC.uniforms.transparency.value = panel.shaders[0].transparency;
-	effectBC.uniforms.transparent.value = panel.shaders[0].transparent;
-	effectBC.uniforms.borw.value = panel.shaders[0].borw;
+    effectBC.uniforms.brightness.value = panel.shaders[0].brightness;
+    effectBC.uniforms.contrast.value = panel.shaders[0].contrast;
+    effectBC.uniforms.transparency.value = panel.shaders[0].transparency;
+    effectBC.uniforms.transparent.value = panel.shaders[0].transparent;
+    effectBC.uniforms.borw.value = panel.shaders[0].borw;
 
-	shaderComposer.addPass(effectBC);
+    shaderComposer.addPass(effectBC);
 
     return {
-        sceneRTT : sceneRTT,
-        panelTextureRTT : panelTextureRTT,
+        sceneRTT: sceneRTT,
+        panelTextureRTT: panelTextureRTT,
         cameraRTT: cameraRTT,
         renderTargetTexture: renderTargetTexture,
         composerScene: composerScene,
@@ -97,7 +99,7 @@ function getTextureSceneContainer(imgTarget)
 function updatePlanes()
 {
     var imageList = frameSource.getFrames();
-   
+
     if (imageList !== null)
     {
         var imageListLength = imageList.length;
@@ -162,9 +164,13 @@ function animate()
 
     updatePlanes();
 
-    camera.position.set(panel.camera.posx,panel.camera.posy,panel.camera.posz);
-    camera.rotation.set(panel.camera.rotx,panel.camera.roty,panel.camera.rotz);
+    camera.position.set(panel.camera.posx, panel.camera.posy, panel.camera.posz);
+    camera.rotation.set(panel.camera.rotx, panel.camera.roty, panel.camera.rotz);
     camera.lookAt(new THREE.Vector3(panel.camera.atx, panel.camera.aty, panel.camera.atz));
+
+    frameSource.snapshotTiming = panel.frame.speed;
+    frameSource.frameCount = panel.frame.framecount;
+    document.body.style.backgroundColor = "rgb(" + panel.sceneBackground.bgcolor[0] + "," + panel.sceneBackground.bgcolor[1] + "," + panel.sceneBackground.bgcolor[2] + ")";
 
     // update camera controls
     //cameraControls.update();

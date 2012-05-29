@@ -86,10 +86,14 @@ TimeSlice.ToolPanel.prototype = {
         var initFrameTransparency = 1.0;
         this.frame =
         {
+            framecount: 100,
+            speed : 200,
             distance: 10,
             transparency: 1.0
         };
 
+        this.FrameManipulation.add(this.frame, 'framecount', 2, 200);
+        this.FrameManipulation.add(this.frame, 'speed', 1, 1000);
         this.FrameManipulation.add(this.frame, 'distance', 0, 500);
         this.FrameManipulation.add(this.frame, 'transparency', 0.0, 1.0);
 
