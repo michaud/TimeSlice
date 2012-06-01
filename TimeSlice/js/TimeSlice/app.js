@@ -23,6 +23,11 @@ var planeWidth = 320;
 var planeHeight = 240;
 var composerScene;
 var delta = 0.9;
+var cameraControls;
+var bgcolor = new THREE.Color();
+var sceneCube;
+var cameraCube;
+var boxMaterial;
 var rtParameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, stencilBuffer: true };
 
 // init the scene
@@ -38,6 +43,23 @@ function init()
     stats = addStats();
     scene = createScene();
     camera = createCamera(scene, panel.camera);
+
+    sceneCube = new THREE.Scene();
+    cameraCube = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 100000);
+
+    bgcolor.r = Math.round(panel.sceneBackground.bgcolor[0]) / 255;
+    bgcolor.g = Math.round(panel.sceneBackground.bgcolor[1]) / 255;
+    bgcolor.b = Math.round(panel.sceneBackground.bgcolor[2]) / 255;
+
+    boxMaterial = new THREE.MeshBasicMaterial({
+        color: bgcolor
+    });
+
+    var boxmesh = new THREE.Mesh(new THREE.CubeGeometry(10000, 10000, 10000), boxMaterial);
+    boxmesh.flipSided = true;
+    scene.add(boxmesh);
+
+
     initScreenControl(renderer, camera);
 }
 
@@ -49,7 +71,6 @@ function getTextureSceneContainer(imgTarget)
     var sceneRTT = new THREE.Scene();
     sceneRTT.add(cameraRTT);
 
-    var renderTargetTexture = new THREE.WebGLRenderTarget(planeWidth, planeHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat });
     var panelTextureRTT = new THREE.Texture(imgTarget);
     var materialRTT = new THREE.MeshBasicMaterial({ map: panelTextureRTT, overdraw: true, transparent: true });
     var planeRTT = new THREE.PlaneGeometry(planeWidth, planeHeight);
@@ -63,27 +84,27 @@ function getTextureSceneContainer(imgTarget)
 
     sceneRTT.add(meshRTT);
 
-    var sceneRenderPass = new THREE.RenderPass(sceneRTT, cameraRTT);
-
-    var composerScene = new THREE.EffectComposer(renderer, renderTargetTexture);
-    composerScene.addPass(sceneRenderPass);
-
-    var renderScene = new THREE.TexturePass(composerScene.renderTarget2);
-
-    var shaderComposer = new THREE.EffectComposer(renderer, renderTargetTexture);
-
-    shaderComposer.addPass(renderScene);
-
     var effectBC = new THREE.ShaderPass(TimeSlice.ShaderExtras["brightnesscontrast"]);
-    effectBC.uniforms.tDiffuse = new THREE.Texture(imgTarget);
+    var effectGS = new THREE.ShaderPass(TimeSlice.ShaderExtras["grayscale"]);
 
+    effectBC.uniforms.active.value = panel.shaders[0].active;
     effectBC.uniforms.brightness.value = panel.shaders[0].brightness;
     effectBC.uniforms.contrast.value = panel.shaders[0].contrast;
     effectBC.uniforms.transparency.value = panel.shaders[0].transparency;
     effectBC.uniforms.transparent.value = panel.shaders[0].transparent;
     effectBC.uniforms.borw.value = panel.shaders[0].borw;
 
-    shaderComposer.addPass(effectBC);
+    effectGS.uniforms.active.value = panel.shaders[1].active;
+
+    var renderTargetTexture = new THREE.WebGLRenderTarget(planeWidth, planeHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat });
+
+    var composerScene = new THREE.EffectComposer(renderer, renderTargetTexture);
+
+    var sceneRenderPass = new THREE.RenderPass(sceneRTT, cameraRTT);
+
+    composerScene.addPass(sceneRenderPass);
+    composerScene.addPass(effectBC);
+    composerScene.addPass(effectGS);
 
     return {
         sceneRTT: sceneRTT,
@@ -91,8 +112,8 @@ function getTextureSceneContainer(imgTarget)
         cameraRTT: cameraRTT,
         renderTargetTexture: renderTargetTexture,
         composerScene: composerScene,
-        shaderComposer: shaderComposer,
-        effectBC: effectBC
+        effectBC: effectBC,
+        effectGS: effectGS
     };
 }
 
@@ -116,7 +137,7 @@ function updatePlanes()
                 {
                     planeContainer = getTextureSceneContainer(imgTarget);
 
-                    planeContainer.material = new THREE.MeshBasicMaterial({ overdraw: true, map: planeContainer.renderTargetTexture, transparent: true });
+                    planeContainer.material = new THREE.MeshBasicMaterial({ overdraw: true, map: planeContainer.composerScene.renderTarget2, transparent: true });
 
                     planeContainer.plane = new THREE.PlaneGeometry(planeWidth, planeHeight);
 
@@ -136,11 +157,14 @@ function updatePlanes()
                     planeContainer.panelTextureRTT.needsUpdate = true;
                 }
 
+                planeContainer.effectBC.uniforms.active.value = panel.shaders[0].active;
                 planeContainer.effectBC.uniforms.brightness.value = panel.shaders[0].brightness;
                 planeContainer.effectBC.uniforms.contrast.value = panel.shaders[0].contrast;
                 planeContainer.effectBC.uniforms.transparency.value = panel.shaders[0].transparency;
                 planeContainer.effectBC.uniforms.transparent.value = panel.shaders[0].transparent;
                 planeContainer.effectBC.uniforms.borw.value = panel.shaders[0].borw;
+
+                planeContainer.effectGS.uniforms.active.value = panel.shaders[1].active;
 
                 planeContainer.material.opacity = panel.frame.transparency;
 
@@ -170,11 +194,14 @@ function animate()
 
     frameSource.snapshotTiming = panel.frame.speed;
     frameSource.frameCount = panel.frame.framecount;
-    document.body.style.backgroundColor = "rgb(" + panel.sceneBackground.bgcolor[0] + "," + panel.sceneBackground.bgcolor[1] + "," + panel.sceneBackground.bgcolor[2] + ")";
 
+    bgcolor.r = Math.round(panel.sceneBackground.bgcolor[0]) / 255;
+    bgcolor.g = Math.round(panel.sceneBackground.bgcolor[1]) / 255;
+    bgcolor.b = Math.round(panel.sceneBackground.bgcolor[2]) / 255;
+
+    boxMaterial.color = bgcolor;
     // update camera controls
     //cameraControls.update();
-    //scene.
     // do the render
     render();
 
@@ -187,14 +214,13 @@ function animate()
 function render()
 {
     var planeListlength = this.planeList.length;
+    
     for (var ind = 0; ind < planeListlength; ind++)
     {
         if (this.planeList)
         {
             renderer.render(this.planeList[ind].sceneRTT, this.planeList[ind].cameraRTT, this.planeList[ind].renderTargetTexture, true);
             this.planeList[ind].composerScene.render(delta);
-            this.planeList[ind].shaderComposer.render(delta);
-
         }
     }
     // actually render the scene

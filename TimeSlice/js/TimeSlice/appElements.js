@@ -18,8 +18,9 @@ function getRenderer()
     {
         newRenderer = new THREE.WebGLRenderer( {
             antialias: true, // to get smoother output
-            preserveDrawingBuffer: true,	// to allow screenshot
-            clearColor: 0x000000,
+            preserveDrawingBuffer: true,
+            autoClear: false,	// to allow screenshot
+            //clearColor: 0x000000,
             alpha : true
             //clearAlpha: 1
         });
@@ -78,7 +79,7 @@ function initLight( ascene )
 function createCamera( ascene, cameraData )
 {
     // put a camera in the scene
-    var newCamera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 1, 5000 );
+    var newCamera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 1, 10000 );
     newCamera.position.set(cameraData.posx, cameraData.posy, cameraData.posz);
     newCamera.lookAt(new THREE.Vector3(cameraData.atx, cameraData.aty, cameraData.atz));
     ascene.add( newCamera );

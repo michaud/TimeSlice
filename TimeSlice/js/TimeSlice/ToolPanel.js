@@ -31,7 +31,7 @@ TimeSlice.ToolPanel.prototype = {
     {
         this.sceneBackground =
         {
-            bgcolor : [0, 128, 255]
+            bgcolor: [9, 9, 9]
         };
 
         this.SceneBackgroundFolder.addColor(this.sceneBackground, 'bgcolor');
@@ -87,7 +87,7 @@ TimeSlice.ToolPanel.prototype = {
         this.frame =
         {
             framecount: 100,
-            speed : 200,
+            speed: 200,
             distance: 10,
             transparency: 1.0
         };
@@ -99,25 +99,41 @@ TimeSlice.ToolPanel.prototype = {
 
 
 
-        this.shaderControls.addFolder("BrightnessContrast");
+        var bccontrols = this.shaderControls.addFolder("BrightnessContrast");
 
 
         var bcshadervals =
         {
+            active: true,
             brightness: 0.0,
             contrast: 1.0,
             transparent: true,
             transparency: 0.3,
             borw: false
-        }
+        };
 
         this.shaders.push(bcshadervals);
 
-        this.shaderControls.add(bcshadervals, 'brightness', 0.0, 1.0);
-        this.shaderControls.add(bcshadervals, 'contrast', 0.0, 1.0);
-        this.shaderControls.add(bcshadervals, 'transparent');
-        this.shaderControls.add(bcshadervals, 'transparency', 0.0, 1.0);
-        this.shaderControls.add(bcshadervals, 'borw');
+        bccontrols.add(bcshadervals, 'active');
+        bccontrols.add(bcshadervals, 'brightness', 0.0, 1.0);
+        bccontrols.add(bcshadervals, 'contrast', 0.0, 1.0);
+        bccontrols.add(bcshadervals, 'transparent');
+        bccontrols.add(bcshadervals, 'transparency', 0.0, 1.0);
+        bccontrols.add(bcshadervals, 'borw');
+        bccontrols.open();
+
+
+        var grayscalecontrols = this.shaderControls.addFolder("grayscale");
+
+        var grayscalevals =
+        {
+            active: false
+        };
+
+        this.shaders.push(grayscalevals);
+
+        grayscalecontrols.add(grayscalevals, 'active');
+        grayscalecontrols.open();
 
         this.SceneBackgroundFolder.open();
         this.CameraManipulation.open();
