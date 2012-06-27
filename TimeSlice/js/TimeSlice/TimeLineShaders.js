@@ -39,16 +39,12 @@ TimeSlice.ShaderExtras = {
 		].join("\n")
 
     },
-    'brightnesscontrast': {
+    'brightness': {
         uniforms:
         {
             tDiffuse: { type: "t", value: 0, texture: null },
             active: { type: "i", value: false },
-            brightness: { type: "f", value: 1.0 },
-            contrast: { type: "f", value: 1.0 },
-            transparent: { type: "i", value: true },
-            transparency: { type: "f", value: 1.0 },
-            borw: { type: "i", value: false }
+            brightness: { type: "f", value: 1.0 }
         },
 
         vertexShader: [
@@ -68,44 +64,67 @@ TimeSlice.ShaderExtras = {
 
         "uniform sampler2D tDiffuse;",
         "uniform float brightness;",
-        "uniform float contrast;",
-        "uniform float transparency;",
         "uniform bool active;",
-        "uniform bool transparent;",
-        "uniform bool borw;",
         "varying vec2 vUv;",
 
         "void main() {",
             "vec4 color = texture2D(tDiffuse, vUv);",
 
             "if (active) {",
-
                 "color.rgb += brightness;",
-
-                "if (contrast > 0.0) {",
-                    "color.rgb = (color.rgb - 0.5) / (1.0 - contrast) + 0.5;",
-                "} else {",
-                    "color.rgb = (color.rgb - 0.5) * (1.0 + contrast) + 0.5;",
-                "}",
-                "if(transparent)",
-                "{",
-                    "if(borw)",
-                    "{",
-                        "if(color.r < 0.3 && color.g < 0.3 && color.b < 0.3)",
-                        "{",
-                            "color.a = transparency;",
-                        "}",
-                    "} else {",
-                        "if(color.r > 0.8 && color.g > 0.8 && color.b > 0.8)",
-                        "{",
-                            "color.a = transparency;",
-                        "}",
-                    "}",
-                "}",
             "}",
+
             "gl_FragColor = color;",
         "}"
 		].join("\n")
+    },
+    'contrast': {
+        uniforms:
+        {
+            tDiffuse: { type: "t", value: 0, texture: null },
+            active: { type: "i", value: false },
+            contrast: { type: "f", value: 1.0 },
+            center: { type: "f", value: 1.0 },
+            uncenter: { type: "f", value: 1.0 }
+        },
+
+        vertexShader: [
+
+			"varying vec2 vUv;",
+
+			"void main() {",
+
+				"vUv = vec2( uv.x, 1.0 - uv.y );",
+				"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+
+			"}"
+
+        ].join("\n"),
+
+        fragmentShader: [
+
+        "uniform sampler2D tDiffuse;",
+        "uniform float contrast;",
+        "uniform float center;",
+        "uniform float uncenter;",
+        "uniform bool active;",
+        "varying vec2 vUv;",
+
+        "void main() {",
+            "vec4 color = texture2D(tDiffuse, vUv);",
+
+            "if (active) {",
+                    "color.rgb -= center;",
+                    //Adjusts by Contrast_Value//[-127.5, 127.5], usually [-1, 1]
+                    //New_Value *= Contrast_Value
+                    "color.rgb *= contrast;",
+                    //Re-add .5 (un-center over 0)//[-127, 128]
+                    //New_Value += 0.5
+                    "color.rgb += uncenter;",
+            "}",
+            "gl_FragColor = color;",
+        "}"
+        ].join("\n")
     },
     'grayscale': {
 

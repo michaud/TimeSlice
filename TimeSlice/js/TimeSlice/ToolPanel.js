@@ -112,29 +112,37 @@ TimeSlice.ToolPanel.prototype = {
         this.FrameManipulation.add(this.frame, 'distance', 0, 100);
         this.FrameManipulation.add(this.frame, 'transparency', 0.0, 1.0);
 
-        var bccontrols = this.shaderControls.addFolder("BrightnessContrast");
+        var bcontrols = this.shaderControls.addFolder("Brightness");
 
-
-        var bcshadervals =
+        var bshadervals =
         {
             active: false,
-            brightness: 0.0,
-            contrast: 1.0,
-            transparent: true,
-            transparency: 0.3,
-            borw: false
+            brightness: 0.0
         };
 
-        this.shaders.push(bcshadervals);
+        this.shaders.push(bshadervals);
 
-        bccontrols.add(bcshadervals, 'active');
-        bccontrols.add(bcshadervals, 'brightness', 0.0, 1.0);
-        bccontrols.add(bcshadervals, 'contrast', 0.0, 1.0);
-        bccontrols.add(bcshadervals, 'transparent');
-        bccontrols.add(bcshadervals, 'transparency', 0.0, 1.0);
-        bccontrols.add(bcshadervals, 'borw');
-        bccontrols.open();
+        bcontrols.add(bshadervals, 'active');
+        bcontrols.add(bshadervals, 'brightness', 0.0, 1.0);
+        bcontrols.open();
 
+        var ccontrols = this.shaderControls.addFolder("Contrast");
+
+        var cshadervals =
+        {
+            active: false,
+            contrast: 0.0,
+            center: 0.0,
+            uncenter: 0
+        };
+
+        this.shaders.push(cshadervals);
+
+        ccontrols.add(cshadervals, 'active');
+        ccontrols.add(cshadervals, 'contrast', -1.0, 30.0);
+        ccontrols.add(cshadervals, 'center', -1.0, 1.0);
+        ccontrols.add(cshadervals, 'uncenter', -1.0, 1.0);
+        ccontrols.open();
 
         var grayscalecontrols = this.shaderControls.addFolder("grayscale");
 

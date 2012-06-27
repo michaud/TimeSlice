@@ -113,7 +113,8 @@ function getNewPlane(imgTarget)
     sceneRTT.add(meshRTT);
 
     //the shaders
-    var effectBC = new THREE.ShaderPass(TimeSlice.ShaderExtras["brightnesscontrast"]);
+    var effectBR = new THREE.ShaderPass(TimeSlice.ShaderExtras["brightness"]);
+    var effectCO = new THREE.ShaderPass(TimeSlice.ShaderExtras["contrast"]);
     var effectGS = new THREE.ShaderPass(TimeSlice.ShaderExtras["grayscale"]);
     var effectHS = new THREE.ShaderPass(TimeSlice.ShaderExtras["huesaturation"]);
     var effectTB = new THREE.ShaderPass(TimeSlice.ShaderExtras["triangleBlur"]);
@@ -125,7 +126,8 @@ function getNewPlane(imgTarget)
     var sceneRenderPass = new THREE.RenderPass(sceneRTT, cameraRTT);
 
     composerScene.addPass(sceneRenderPass);
-    composerScene.addPass(effectBC);
+    composerScene.addPass(effectBR);
+    composerScene.addPass(effectCO);
     composerScene.addPass(effectGS);
     composerScene.addPass(effectHS);
     composerScene.addPass(effectTB);
@@ -158,7 +160,8 @@ function getNewPlane(imgTarget)
         renderTargetTexture: renderTargetTexture,
         composerScene: composerScene,
         mesh : mesh,
-        effectBC: effectBC,
+        effectBR: effectBR,
+        effectCO: effectCO,
         effectGS: effectGS,
         effectHS: effectHS,
         effectTB: effectTB,
@@ -199,24 +202,25 @@ function updatePlanes()
                 planeContainer.panelTextureRTT.image = imgTarget;
                 planeContainer.panelTextureRTT.needsUpdate = true;
 
-                planeContainer.effectBC.uniforms.active.value = panel.shaders[0].active;
-                planeContainer.effectBC.uniforms.brightness.value = panel.shaders[0].brightness;
-                planeContainer.effectBC.uniforms.contrast.value = panel.shaders[0].contrast;
-                planeContainer.effectBC.uniforms.transparency.value = panel.shaders[0].transparency;
-                planeContainer.effectBC.uniforms.transparent.value = panel.shaders[0].transparent;
-                planeContainer.effectBC.uniforms.borw.value = panel.shaders[0].borw;
+                planeContainer.effectBR.uniforms.active.value = panel.shaders[0].active;
+                planeContainer.effectBR.uniforms.brightness.value = panel.shaders[0].brightness;
 
-                planeContainer.effectGS.uniforms.active.value = panel.shaders[1].active;
+                planeContainer.effectCO.uniforms.active.value = panel.shaders[1].active;
+                planeContainer.effectCO.uniforms.contrast.value = panel.shaders[1].contrast;
+                planeContainer.effectCO.uniforms.center.value = panel.shaders[1].center;
+                planeContainer.effectCO.uniforms.uncenter.value = panel.shaders[1].uncenter;
 
-                planeContainer.effectHS.uniforms.active.value = panel.shaders[2].active;
-                planeContainer.effectHS.uniforms.hue.value = panel.shaders[2].hue;
-                planeContainer.effectHS.uniforms.saturation.value = panel.shaders[2].saturation;
+                planeContainer.effectGS.uniforms.active.value = panel.shaders[2].active;
 
-                planeContainer.effectTB.uniforms.active.value = panel.shaders[3].active;
-                planeContainer.effectTB.uniforms.delta1.value = panel.shaders[3].delta1;
-                planeContainer.effectTB.uniforms.delta2.value = panel.shaders[3].delta2;
+                planeContainer.effectHS.uniforms.active.value = panel.shaders[3].active;
+                planeContainer.effectHS.uniforms.hue.value = panel.shaders[3].hue;
+                planeContainer.effectHS.uniforms.saturation.value = panel.shaders[3].saturation;
 
-                planeContainer.effectIV.uniforms.active.value = panel.shaders[4].active;
+                planeContainer.effectTB.uniforms.active.value = panel.shaders[4].active;
+                planeContainer.effectTB.uniforms.delta1.value = panel.shaders[4].delta1;
+                planeContainer.effectTB.uniforms.delta2.value = panel.shaders[4].delta2;
+
+                planeContainer.effectIV.uniforms.active.value = panel.shaders[5].active;
 
                 planeContainer.effectSL.uniforms.active.value = panel.slice.active;
                 planeContainer.effectSL.uniforms.tSlice.texture = slicer.getTexture();
