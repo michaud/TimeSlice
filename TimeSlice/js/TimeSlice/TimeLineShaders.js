@@ -365,16 +365,9 @@ TimeSlice.ShaderExtras = {
 
                 "if (active) {",
 
-                    "int targetDepth = int(scolor.b * float(255));",
-                    "float pixelHalfWidth = (1.0/float(frameWidth));",
-                    "float pixelHalfHeight = (1.0/float(frameHeight));",
-                    "if(",
-                        "(targetDepth == zindex)",
-                        "// && ",
-                        "//(vUv.x > scolor.r - (pixelHalfWidth *2.0) && vUv.x < scolor.r + (pixelHalfWidth *2.0))",
-                        "// && ",
-                        "//(vUv.y > scolor.g - (pixelHalfHeight * 2.0) && vUv.y < scolor.g + (pixelHalfHeight * 2.0))",
-                    ")",
+                    "int targetDepth = int(scolor.r * float(255));",
+
+                    "if(targetDepth == zindex+1)",
                     "{",
                         "color.a = sliceopacity;",
                     "} else {",

@@ -31,7 +31,7 @@ TimeSlice.ToolPanel.prototype = {
     {
         this.sceneBackground =
         {
-            bgcolor: [9, 9, 9]
+            bgcolor: [240, 240, 240]
         };
 
         this.SceneBackgroundFolder.addColor(this.sceneBackground, 'bgcolor');
@@ -69,14 +69,14 @@ TimeSlice.ToolPanel.prototype = {
 
         this.slice =
         {
-            active: true,
-            planevis: true,
+            active: false,
+            planevis: false,
             posx: 0,
             posy: 0,
             posz: 0,
-            rotx: 0.64,
-            roty: 2.59,
-            rotz: 0.432925038717851,
+            rotx: 0.50,
+            roty: 0.01,
+            rotz: 0.01,
             fropacity: 0.01,
             slopacity: 1.0,
             plopacity: 0.5
@@ -87,12 +87,13 @@ TimeSlice.ToolPanel.prototype = {
         this.SliceManipulation.add(this.slice, 'plopacity', 0.0, 1.0, 0.01);
         this.SliceManipulation.add(this.slice, 'fropacity', 0.0, 1.0, 0.01);
         this.SliceManipulation.add(this.slice, 'slopacity', 0.0, 1.0, 0.01);
-        this.SliceManipulation.add(this.slice, 'posx', -100, 100);
-        this.SliceManipulation.add(this.slice, 'posy', -100, 100);
-        this.SliceManipulation.add(this.slice, 'posz', -100, 100);
-        this.SliceManipulation.add(this.slice, 'rotx', 0.0, 2.0 * Math.PI, 0.01);
-        this.SliceManipulation.add(this.slice, 'roty', 0.0, 2.0 * Math.PI, 0.01);
-        this.SliceManipulation.add(this.slice, 'rotz', 0.0, 2.0 * Math.PI, 0.01);
+        this.SliceManipulation.add(this.slice, 'posx', -1000, 1000);
+        this.SliceManipulation.add(this.slice, 'posy', -1000, 1000);
+        this.SliceManipulation.add(this.slice, 'posz', -1000, 1000);
+        this.SliceManipulation.add(this.slice, 'rotx', 0.00, 2 * Math.PI, 0.01);
+        this.SliceManipulation.add(this.slice, 'roty', 0.00, 2 * Math.PI, 0.01);
+        this.SliceManipulation.add(this.slice, 'rotz', 0.00, 2 * Math.PI, 0.01);
+
 
         var initFrameDistance = 10;
         var initFrameTransparency = 1.0;
@@ -196,7 +197,7 @@ TimeSlice.ToolPanel.prototype = {
         this.SceneBackgroundFolder.open();
         this.CameraManipulation.open();
         this.FrameManipulation.open();
-        this.SliceManipulation.open();
+        //this.SliceManipulation.open();
         this.shaderControls.open();
 
     }

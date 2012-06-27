@@ -7,10 +7,10 @@ TimeSlice.Slicer = function (deckSize, imgWidth, imgHeight) {
     this.imgWidth = imgWidth;
     this.imgHeight = imgHeight;
     this.deckSize = deckSize;
-    this.slicePlane = new toxi.geom.Plane(new toxi.geom.Vec3D(0, 0, 50 / 2), new toxi.geom.Vec3D(0, 1, 0));
+    this.slicePlane = new toxi.geom.Plane(new toxi.geom.Vec3D(0, 0, 0), new toxi.geom.Vec3D(0, 0, -1));
     this.xray = new toxi.geom.Ray3D(new toxi.geom.Vec3D(0, 0, 0), new toxi.geom.Vec3D(1, 0, 0));
     this.yray = new toxi.geom.Ray3D(new toxi.geom.Vec3D(0, 0, 0), new toxi.geom.Vec3D(0, 1, 0));
-    this.zray = new toxi.geom.Ray3D(new toxi.geom.Vec3D(0, 0, 0), new toxi.geom.Vec3D(0, 0, 1));
+    this.zray = new toxi.geom.Ray3D(new toxi.geom.Vec3D(0, 0, 0), new toxi.geom.Vec3D(0, 0, -1));
 
     var rwidth = this.imgWidth, rheight = this.imgHeight, rsize = rwidth * rheight * 4;
     this.dataTexture = this.generateRGBADataTexture(this.imgWidth, this.imgHeight, THREE.Color());
@@ -21,86 +21,92 @@ TimeSlice.Slicer.prototype = {
     xSliceOrigin: 0.0,
     ySliceOrigin: 0.0,
     zSliceOrigin: 0.0,
-    xSliceAxis: 0.0,
-    ySliceAxis: 0.0,
-    zSliceAxis: 0.0,
+    xSliceRot: 0.0,
+    ySliceRot: 0.0,
+    zSliceRot: 0.0,
     slicePlane: null,
     sliceMatrix: null,
     imgHeight: 0,
     imgWidth: 0,
     deckSize: 0,
-    xray: new toxi.geom.Ray3D(new toxi.geom.Vec3D(0, 0, 0), new toxi.geom.Vec3D(1, 0, 0)),
-    yray: new toxi.geom.Ray3D(new toxi.geom.Vec3D(0, 0, 0), new toxi.geom.Vec3D(0, 1, 0)),
-    zray: new toxi.geom.Ray3D(new toxi.geom.Vec3D(0, 0, 0), new toxi.geom.Vec3D(0, 0, -1)),
+    xray: null,
+    yray: null,
+    zray: null,
     dataTexture: null,
 
-    updateSliceMatrix: function () {
-        this.dataTexture = this.generateRGBADataTexture(this.imgWidth, this.imgHeight, THREE.Color());
+    updateSlice: function () {
 
         this.slicePlane.set(this.xSliceOrigin, this.ySliceOrigin, this.zSliceOrigin);
 
-        var newNormal = new toxi.geom.Vec3D(this.xSliceAxis, this.ySliceAxis, this.zSliceAxis).normalize();
-        this.slicePlane.normal = newNormal; //.normalize();
+        var newNormal = new toxi.geom.Vec3D(0, 1, 0);
 
+        newNormal.rotateX(this.xSliceRot);
+        newNormal.rotateY(this.ySliceRot);
+        newNormal.rotateZ(this.zSliceRot);
+
+        this.slicePlane.normal = newNormal;
+
+        //go through z
         for (var y = 0; y < this.imgHeight; y++) {
             for (var x = 0; x < this.imgWidth; x++) {
                 this.zray.x = x;
                 this.zray.y = y;
 
-                var depth = Math.round(Math.abs( this.slicePlane.intersectRayDistance(this.zray)));
-
-                var r = x;
-                var g = y;
-                var b = 0;
-                var a = 255;
-
+                var depth = Math.round(this.slicePlane.intersectRayDistance(this.zray));
+                var result = 0;
                 if (depth > -1 && depth < this.deckSize) {
-                    b = depth;
+                    result = depth;
                 }
 
                 var i = x + (y * this.imgWidth);
 
-                this.dataTexture.image.data[i * 4] = r;
-                this.dataTexture.image.data[i * 4 + 1] = g;
-                this.dataTexture.image.data[i * 4 + 2] = b;
-                this.dataTexture.image.data[i * 4 + 3] = a;
+                this.dataTexture.image.data[i * 4] = result;
             }
         }
 
-        //        var testsliceMatrix = this.sliceMatrix.slice(0, 102400);
-        //        console.log(testsliceMatrix.join());
+        //for(var y = 0; y < this.imgHeight; y++)
+        //{
+        //    for (var z = 0; z < this.deckSize; z++)
+        //    {
+        //        this.xray.z = z;
+        //        this.xray.y = y;
 
-        //        for(var y = 0; y < this.imgHeight; y++)
+        //        depth = Math.round(this.slicePlane.intersectRayDistance(this.xray));
+        //        var result = 0;
+
+        //        if (depth > -1 && depth < this.imgWidth)
         //        {
-        //            for (var z = 0; z < this.deckSize; z++)
-        //            {
-        //                this.xray.z = z;
-        //                this.xray.y = y;
-
-        //                depth = Math.round(this.slicePlane.intersectRayDistance(this.xray));
-
-        //                if (depth > -1 && depth < this.imgWidth)
-        //                {
-        //                    this.sliceMatrix[z][depth][y] = [255, 255, 255, 255];
-        //                }
-        //            }
+        //            result = depth;
         //        }
 
-        //        for (x = 0; x < this.imgHeight; x++)
+        //        var i = depth + (y * this.imgWidth);
+        //        //this.sliceMatrix[z][depth][y] = [255, 255, 255, 255];
+        //        this.dataTexture.image.data[i * 4] = result;
+
+        //    }
+        //}
+
+        //for (x = 0; x < this.imgHeight; x++)
+        //{
+        //    for (z = 0; z < this.deckSize; z++)
+        //    {
+        //        this.yray.z = z;
+        //        this.yray.x = x;
+
+        //        var result = 0;
+        //        depth = Math.round(this.slicePlane.intersectRayDistance(this.yray));
+
+        //        if (depth > -1 && depth < this.imgHeight)
         //        {
-        //            for (z = 0; z < this.deckSize; z++)
-        //            {
-        //                this.yray.z = z;
-        //                this.yray.x = x;
-
-        //                depth = Math.round(this.slicePlane.intersectRayDistance(this.yray));
-
-        //                if (depth > -1 && depth < this.imgHeight)
-        //                {
-        //                    this.sliceMatrix[z][x][depth] = [255, 255, 255, 255];
-        //                }
-        //            }
+        //            result = depth;
         //        }
+
+        //        var i = x + (depth * this.imgWidth);
+
+        //        //this.sliceMatrix[z][x][depth] = [255, 255, 255, 255];
+        //        this.dataTexture.image.data[i * 4] = result;
+        //    }
+        //}
     },
 
     getTexture: function () {                                          //data, width, height, format, type, mapping, wrapS, wrapT, magFilter, minFilter //

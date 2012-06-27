@@ -239,19 +239,27 @@ function updatePlanes()
 
 function updateSlicer()
 {
-    slicePlane.position.set(panel.slice.posx, panel.slice.posy, panel.slice.posz / panel.frame.distance);
+    slicePlane.position.set(panel.slice.posx, panel.slice.posy, panel.slice.posz);
     slicePlane.rotation.set(panel.slice.rotx, panel.slice.roty, panel.slice.rotz);
 
     slicer.xSliceOrigin = Math.abs(panel.slice.posx) / panel.frame.distance;
     slicer.ySliceOrigin = Math.abs(panel.slice.posy) / panel.frame.distance;
     slicer.zSliceOrigin = Math.abs(panel.slice.posz) / panel.frame.distance;
-    slicer.xSliceAxis = panel.slice.rotx;
-    slicer.ySliceAxis = panel.slice.roty;
-    slicer.zSliceAxis = panel.slice.rotz;
 
-    slicer.updateSliceMatrix();
+    var q = toxi.geom.Quaternion.createFromEuler(slicePlane.rotation.x, slicePlane.rotation.y, slicePlane.rotation.z);
+    slicer.xSliceRot = slicePlane.rotation.x;
+    slicer.ySliceRot = slicePlane.rotation.y;
+    slicer.zSliceRot = slicePlane.rotation.z;
+    //slicer.xSliceRot = slicePlane.rotation.x;
+    //slicer.ySliceRot = slicePlane.rotation.y;
+    //slicer.zSliceRot = slicePlane.rotation.z;
 
-    slicePlane.visible = panel.slice.planevis;
+    slicer.updateSlice();
+
+    var planeVis = false;
+
+    slicePlane.visible = panel.slice.active ? (panel.slice.planevis ? true : false) : planeVis = panel.slice.planevis = false;
+
     slicePlane.material.opacity = panel.slice.plopacity;
 }
 
