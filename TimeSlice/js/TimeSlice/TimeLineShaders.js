@@ -386,7 +386,7 @@ TimeSlice.ShaderExtras = {
 
                     "int targetDepth = int(scolor.r * float(255));",
 
-                    "if(targetDepth == zindex+1)",
+                    "if(targetDepth == zindex)",
                     "{",
                         "color.a = sliceopacity;",
                     "} else {",
@@ -400,5 +400,73 @@ TimeSlice.ShaderExtras = {
 
 		].join("\n")
 
-    }
+    },
+    'coloralpha': {
+
+        uniforms: {
+
+            tDiffuse: { type: "t", value: 0, texture: null },
+            active: { type: "i", value: false },
+            invert: { type: "i", value: false },
+            coloralpha: { type: "v3", value: new THREE.Vector3(0.0, 0.0, 0.0) },
+            range: {type: "f", value: 0.1}
+
+
+        },
+
+        vertexShader: [
+
+			"varying vec2 vUv;",
+
+			"void main() {",
+				"vUv = vec2( uv.x, 1.0 - uv.y );",
+				"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+			"}"
+
+        ].join("\n"),
+
+        fragmentShader: [
+
+        "uniform sampler2D tDiffuse;",
+        "uniform bool active;",
+        "uniform bool invert;",
+        "uniform vec3 coloralpha;",
+        "uniform float range;",
+        "varying vec2 vUv;",
+
+        "void main() {",
+            "vec4 color = texture2D(tDiffuse, vUv);",
+            "if (active) {",
+                "if(",
+                    "(color.r > coloralpha.x - range &&  color.r < coloralpha.x + range) && ",
+                    "(color.g > coloralpha.y - range &&  color.g < coloralpha.y + range) && ",
+                    "(color.b > coloralpha.z - range &&  color.b < coloralpha.z + range)",
+                ")",
+                "{",
+                    "if(invert)",
+                    "{",
+                        "color.a = 1.0;",
+                    "}",
+                    "else",
+                    "{",
+                        "color.a = 0.0;",
+                    "}",
+                "}",
+                "else",
+                "{",
+                    "if(!invert)",
+                    "{",
+                        "color.a = 1.0;",
+                    "}",
+                    "else",
+                    "{",
+                        "color.a = 0.0;",
+                    "}",
+                "}",
+            "}",
+            "gl_FragColor = color;",
+        "}"
+        ].join("\n")
+    },
+
 };

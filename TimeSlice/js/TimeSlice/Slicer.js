@@ -36,13 +36,14 @@ TimeSlice.Slicer.prototype = {
 
     updateSlice: function () {
 
-        this.slicePlane.set(this.xSliceOrigin, this.ySliceOrigin, this.zSliceOrigin);
-
         var newNormal = new toxi.geom.Vec3D(0, 1, 0);
 
         newNormal.rotateX(this.xSliceRot);
         newNormal.rotateY(this.ySliceRot);
         newNormal.rotateZ(this.zSliceRot);
+
+        this.slicePlane.set(this.xSliceOrigin - 160, this.ySliceOrigin - 120, this.zSliceOrigin);
+
 
         this.slicePlane.normal = newNormal;
 
@@ -53,7 +54,7 @@ TimeSlice.Slicer.prototype = {
                 this.zray.y = y;
 
                 var depth = Math.round(this.slicePlane.intersectRayDistance(this.zray));
-                var result = 0;
+                var result = -1;
                 if (depth > -1 && depth < this.deckSize) {
                     result = depth;
                 }

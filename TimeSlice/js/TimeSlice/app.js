@@ -38,9 +38,8 @@ var slicePlaneMaterial;
 // init the scene
 function init()
 {
-    toolPanel = new dat.GUI({ autoPlace: false });
-    panel = new TimeSlice.ToolPanel(toolPanel);
-    $("#ControlPanel").append(toolPanel.domElement);
+    panel = new TimeSlice.ToolPanel();
+    $("#ControlPanel").append(panel.domElement);
 
     frameSource = new TimeSlice.VideoFrameSource(document.getElementById("monitor"), frameCount, 1, planeWidth, planeHeight);
 
@@ -120,6 +119,7 @@ function getNewPlane(imgTarget)
     var effectTB = new THREE.ShaderPass(TimeSlice.ShaderExtras["triangleBlur"]);
     var effectIV = new THREE.ShaderPass(TimeSlice.ShaderExtras["invert"]);
     var effectSL = new THREE.ShaderPass(TimeSlice.ShaderExtras["slice"]);
+    var effectCA = new THREE.ShaderPass(TimeSlice.ShaderExtras["coloralpha"]);
 
     var renderTargetTexture = new THREE.WebGLRenderTarget(planeWidth, planeHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat });
     var composerScene = new THREE.EffectComposer(renderer, renderTargetTexture);
@@ -133,6 +133,7 @@ function getNewPlane(imgTarget)
     composerScene.addPass(effectTB);
     composerScene.addPass(effectIV);
     composerScene.addPass(effectSL);
+    composerScene.addPass(effectCA);
 
     var material;
 
@@ -166,7 +167,8 @@ function getNewPlane(imgTarget)
         effectHS: effectHS,
         effectTB: effectTB,
         effectIV: effectIV,
-        effectSL: effectSL
+        effectSL: effectSL,
+        effectCA: effectCA
     };
 
     planeList.push(planeContainer);
@@ -222,6 +224,12 @@ function updatePlanes()
 
                 planeContainer.effectIV.uniforms.active.value = panel.shaders[5].active;
 
+                planeContainer.effectCA.uniforms.active.value = panel.shaders[6].active;
+                
+                planeContainer.effectCA.uniforms.coloralpha.value = new THREE.Vector3(panel.shaders[6].alphacolor[0] / 255, panel.shaders[6].alphacolor[1] / 255, panel.shaders[6].alphacolor[2] / 255);
+                planeContainer.effectCA.uniforms.range.value = panel.shaders[6].range;
+                planeContainer.effectCA.uniforms.invert.value = panel.shaders[6].invert;
+
                 planeContainer.effectSL.uniforms.active.value = panel.slice.active;
                 planeContainer.effectSL.uniforms.tSlice.texture = slicer.getTexture();
                 planeContainer.effectSL.uniforms.frameWidth.value = planeWidth;
@@ -246,17 +254,13 @@ function updateSlicer()
     slicePlane.position.set(panel.slice.posx, panel.slice.posy, panel.slice.posz);
     slicePlane.rotation.set(panel.slice.rotx, panel.slice.roty, panel.slice.rotz);
 
-    slicer.xSliceOrigin = Math.abs(panel.slice.posx) / panel.frame.distance;
-    slicer.ySliceOrigin = Math.abs(panel.slice.posy) / panel.frame.distance;
-    slicer.zSliceOrigin = Math.abs(panel.slice.posz) / panel.frame.distance;
+    slicer.xSliceOrigin = panel.slice.posx / panel.frame.distance;
+    slicer.ySliceOrigin = panel.slice.posy / panel.frame.distance;
+    slicer.zSliceOrigin = panel.slice.posz / panel.frame.distance;
 
-    var q = toxi.geom.Quaternion.createFromEuler(slicePlane.rotation.x, slicePlane.rotation.y, slicePlane.rotation.z);
     slicer.xSliceRot = slicePlane.rotation.x;
     slicer.ySliceRot = slicePlane.rotation.y;
     slicer.zSliceRot = slicePlane.rotation.z;
-    //slicer.xSliceRot = slicePlane.rotation.x;
-    //slicer.ySliceRot = slicePlane.rotation.y;
-    //slicer.zSliceRot = slicePlane.rotation.z;
 
     slicer.updateSlice();
 

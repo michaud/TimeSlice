@@ -1,16 +1,17 @@
 ﻿/// <reference path="../libs/datgui/dat.gui.js" />
 var TimeSlice = TimeSlice || {};
 
-TimeSlice.ToolPanel = function(panel)
+TimeSlice.ToolPanel = function()
 {
-    this.tools = panel;
-
-    this.SceneBackgroundFolder = this.tools.addFolder("Scene");
-    this.CameraManipulation = this.tools.addFolder("Camera");
-    this.FrameManipulation = this.tools.addFolder("Frame");
-    this.SliceManipulation = this.tools.addFolder("Slice");
-    this.shaderControls = this.tools.addFolder("Shadercontrols");
-    this.initializeControls();
+    var me = this;
+    me.tools = new dat.GUI({ autoPlace: false });
+    me.domElement = me.tools.domElement;
+    me.SceneBackgroundFolder = me.tools.addFolder("Scene");
+    me.CameraManipulation = me.tools.addFolder("Camera");
+    me.FrameManipulation = me.tools.addFolder("Frame");
+    me.SliceManipulation = me.tools.addFolder("Slice");
+    me.shaderControls = me.tools.addFolder("Shadercontrols");
+    me.initializeControls();
 };
 
 TimeSlice.ToolPanel.prototype = {
@@ -26,6 +27,8 @@ TimeSlice.ToolPanel.prototype = {
     slice: null,
     frame: null,
     shaders: [],
+    allData: new Object(),
+    domElement: null,
 
     initializeControls: function()
     {
@@ -52,20 +55,27 @@ TimeSlice.ToolPanel.prototype = {
             atz: 0
         };
 
+        var positionFolder = this.CameraManipulation.addFolder("position");
+        positionFolder.add(this.camera, 'posx', -2000, 2000);
+        positionFolder.add(this.camera, 'posy', -2000, 2000);
+        positionFolder.add(this.camera, 'posz', -2000, 2000);
 
+        positionFolder.open();
 
-        var camPosX = this.CameraManipulation.add(this.camera, 'posx', -2000, 2000);
-        this.CameraManipulation.add(this.camera, 'posy', -2000, 2000);
-        this.CameraManipulation.add(this.camera, 'posz', -2000, 2000);
-        this.CameraManipulation.add(this.camera, 'dollyx', -2000, 2000);
-        this.CameraManipulation.add(this.camera, 'dollyy', -2000, 2000);
-        this.CameraManipulation.add(this.camera, 'dollyz', -2000, 2000);
-        this.CameraManipulation.add(this.camera, 'rotx', 0.0, 2.0 * Math.PI);
-        this.CameraManipulation.add(this.camera, 'roty', 0.0, 2.0 * Math.PI);
-        this.CameraManipulation.add(this.camera, 'rotz', 0.0, 2.0 * Math.PI);
-        this.CameraManipulation.add(this.camera, 'atx', -2000, 2000);
-        this.CameraManipulation.add(this.camera, 'aty', -2000, 2000);
-        this.CameraManipulation.add(this.camera, 'atz', -2000, 2000);
+        var dollyFolder = this.CameraManipulation.addFolder("dolly");
+        dollyFolder.add(this.camera, 'dollyx', -2000, 2000);
+        dollyFolder.add(this.camera, 'dollyy', -2000, 2000);
+        dollyFolder.add(this.camera, 'dollyz', -2000, 2000);
+
+        var rotFolder = this.CameraManipulation.addFolder("rotation");
+        rotFolder.add(this.camera, 'rotx', 0.0, 2.0 * Math.PI);
+        rotFolder.add(this.camera, 'roty', 0.0, 2.0 * Math.PI);
+        rotFolder.add(this.camera, 'rotz', 0.0, 2.0 * Math.PI);
+
+        var atFolder = this.CameraManipulation.addFolder("at");
+        atFolder.add(this.camera, 'atx', -2000, 2000);
+        atFolder.add(this.camera, 'aty', -2000, 2000);
+        atFolder.add(this.camera, 'atz', -2000, 2000);
 
         this.slice =
         {
@@ -201,6 +211,26 @@ TimeSlice.ToolPanel.prototype = {
 
         invertcontrols.add(invertvals, "active");
         invertcontrols.open();
+
+        var colorTransparentControls = this.shaderControls.addFolder("coloralpha");
+
+        var colorTransparentvals =
+        {
+            active: false,
+            invert: false,
+            alphacolor: [128, 128, 128],
+            range: 0.1
+        };
+
+        this.shaders.push(colorTransparentvals);
+
+        colorTransparentControls.add(colorTransparentvals, 'active');
+        colorTransparentControls.addColor(colorTransparentvals, 'alphacolor');
+        colorTransparentControls.add(colorTransparentvals, 'range', 0.01, 1.00);
+        colorTransparentControls.add(colorTransparentvals, 'invert');
+
+        colorTransparentControls.open();
+
 
         this.SceneBackgroundFolder.open();
         this.CameraManipulation.open();
