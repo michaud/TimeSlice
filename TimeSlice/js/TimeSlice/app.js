@@ -11,7 +11,6 @@
 /// <reference path="../libs/jquery-1.7.1.min.js" />
 /// <reference path="VideoFrameSource.js" />
 
-
 var App;
 
 App = (function() {
