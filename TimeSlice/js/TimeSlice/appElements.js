@@ -10,7 +10,7 @@ function addStats()
     return stats;
 }
 
-function getRenderer()
+function getRenderer(targetId)
 {
     var newRenderer;
 
@@ -20,9 +20,7 @@ function getRenderer()
             antialias: true, // to get smoother output
             preserveDrawingBuffer: true,
             autoClear: false,	// to allow screenshot
-            //clearColor: 0x000000,
-            alpha : true
-            //clearAlpha: 1
+            alpha: true
         });
     }
     else
@@ -31,7 +29,7 @@ function getRenderer()
     }
 
     newRenderer.setSize( window.innerWidth, window.innerHeight );
-    document.getElementById( 'container' ).appendChild( newRenderer.domElement );
+    document.getElementById( targetId ).appendChild( newRenderer.domElement );
     
     return newRenderer;
 }

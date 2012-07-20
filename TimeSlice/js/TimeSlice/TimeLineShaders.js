@@ -83,9 +83,9 @@ TimeSlice.ShaderExtras = {
         {
             tDiffuse: { type: "t", value: 0, texture: null },
             active: { type: "i", value: false },
-            contrast: { type: "f", value: 1.0 },
-            center: { type: "f", value: 1.0 },
-            uncenter: { type: "f", value: 1.0 }
+            contrast: { type: "f", value:  1.0 },
+            brightness: { type: "f", value: 1.0 },
+            saturation: { type: "f", value: 1.0 }
         },
 
         vertexShader: [
@@ -105,8 +105,8 @@ TimeSlice.ShaderExtras = {
 
         "uniform sampler2D tDiffuse;",
         "uniform float contrast;",
-        "uniform float center;",
-        "uniform float uncenter;",
+        "uniform float brightness;",
+        "uniform float saturation;",
         "uniform bool active;",
         "varying vec2 vUv;",
 
@@ -114,13 +114,28 @@ TimeSlice.ShaderExtras = {
             "vec4 color = texture2D(tDiffuse, vUv);",
 
             "if (active) {",
-                    "color.rgb -= center;",
-                    //Adjusts by Contrast_Value//[-127.5, 127.5], usually [-1, 1]
-                    //New_Value *= Contrast_Value
-                    "color.rgb *= contrast;",
-                    //Re-add .5 (un-center over 0)//[-127, 128]
-                    //New_Value += 0.5
-                    "color.rgb += uncenter;",
+            "// Increase or decrease theese values to adjust r, g and b color channels seperately",
+                "const float AvgLumR = 0.5;",
+                "const float AvgLumG = 0.5;",
+                "const float AvgLumB = 0.5;",
+
+                "const vec3 LumCoeff = vec3(0.2125, 0.7154, 0.0721);",
+
+                "vec3 AvgLumin = vec3(AvgLumR, AvgLumG, AvgLumB);",
+                "vec3 brtColor = color.rgb * brightness;",
+                "vec3 intensity = vec3(dot(brtColor, LumCoeff));",
+                "vec3 satColor = mix(intensity, brtColor, saturation);",
+                "vec3 conColor = mix(AvgLumin, satColor, contrast);",
+                //"color.rgb -= center;",
+                ////Adjusts by Contrast_Value//[-127.5, 127.5], usually [-1, 1]
+                ////New_Value *= Contrast_Value
+                //"color.rgb *= contrast;",
+                ////Re-add .5 (un-center over 0)//[-127, 128]
+                ////New_Value += 0.5
+                //"color.rgb += uncenter;",
+                "color.r = conColor.x;",
+                "color.g = conColor.y;",
+                "color.b = conColor.z;",
             "}",
             "gl_FragColor = color;",
         "}"
@@ -343,6 +358,7 @@ TimeSlice.ShaderExtras = {
             tDiffuse: { type: "t", value: 0, texture: null },
             tSlice: { type: "t", value: 1, texture: null },
             active: { type: "i", value: true },
+            showtex: { type: "i", value: false },
             zindex: { type: "i", value: 0 },
             frameCount: { type: "i", value: 0 },
             frameWidth: { type: "i", value: 0 },
@@ -369,6 +385,7 @@ TimeSlice.ShaderExtras = {
             "uniform sampler2D tDiffuse;",
             "uniform sampler2D tSlice;",
             "uniform bool active;",
+            "uniform bool showtex;",
             "uniform int zindex;",
             "uniform int frameCount;",
             "uniform int frameWidth;",
@@ -393,9 +410,11 @@ TimeSlice.ShaderExtras = {
                         "color.a = frameopacity;",
                     "}",
                 "}",
-
-				"gl_FragColor = color;",
-
+                "if (!showtex) {",
+				    "gl_FragColor = color;",
+                "} else {",
+                	"gl_FragColor = scolor;",
+                "}",
 			"}"
 
 		].join("\n")

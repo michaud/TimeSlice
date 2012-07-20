@@ -8,9 +8,6 @@ TimeSlice.Slicer = function (deckSize, imgWidth, imgHeight) {
     this.imgHeight = imgHeight;
     this.deckSize = deckSize;
     this.slicePlane = new toxi.geom.Plane(new toxi.geom.Vec3D(0, 0, 0), new toxi.geom.Vec3D(0, 0, -1));
-    this.xray = new toxi.geom.Ray3D(new toxi.geom.Vec3D(0, 0, 0), new toxi.geom.Vec3D(1, 0, 0));
-    this.yray = new toxi.geom.Ray3D(new toxi.geom.Vec3D(0, 0, 0), new toxi.geom.Vec3D(0, 1, 0));
-    this.zray = new toxi.geom.Ray3D(new toxi.geom.Vec3D(0, 0, 0), new toxi.geom.Vec3D(0, 0, -1));
 
     var rwidth = this.imgWidth, rheight = this.imgHeight, rsize = rwidth * rheight * 4;
     this.dataTexture = this.generateRGBADataTexture(this.imgWidth, this.imgHeight, THREE.Color());
@@ -36,13 +33,17 @@ TimeSlice.Slicer.prototype = {
 
     updateSlice: function () {
 
+        this.xray = new toxi.geom.Ray3D(new toxi.geom.Vec3D(0, 0, 0), new toxi.geom.Vec3D(1, 0, 0));
+        this.yray = new toxi.geom.Ray3D(new toxi.geom.Vec3D(0, 0, 0), new toxi.geom.Vec3D(0, 1, 0));
+        this.zray = new toxi.geom.Ray3D(new toxi.geom.Vec3D(0, 0, 0), new toxi.geom.Vec3D(0, 0, 1));
+
         var newNormal = new toxi.geom.Vec3D(0, 1, 0);
 
         newNormal.rotateX(this.xSliceRot);
         newNormal.rotateY(this.ySliceRot);
         newNormal.rotateZ(this.zSliceRot);
 
-        this.slicePlane.set(this.xSliceOrigin - 160, this.ySliceOrigin - 120, this.zSliceOrigin);
+        this.slicePlane.set(this.xSliceOrigin - (this.imgWidth / 2), this.ySliceOrigin - (this.imgHeight / 2), this.zSliceOrigin);
 
 
         this.slicePlane.normal = newNormal;
@@ -52,8 +53,9 @@ TimeSlice.Slicer.prototype = {
             for (var x = 0; x < this.imgWidth; x++) {
                 this.zray.x = x;
                 this.zray.y = y;
-
+                var result;
                 var depth = Math.round(this.slicePlane.intersectRayDistance(this.zray));
+
                 var result = -1;
                 if (depth > -1 && depth < this.deckSize) {
                     result = depth;
@@ -72,22 +74,23 @@ TimeSlice.Slicer.prototype = {
         //        this.xray.z = z;
         //        this.xray.y = y;
 
-        //        depth = Math.round(this.slicePlane.intersectRayDistance(this.xray));
-        //        var result = 0;
+        //        var depth = Math.round(this.slicePlane.intersectRayDistance(this.xray));
+
+        //        var result;
 
         //        if (depth > -1 && depth < this.imgWidth)
         //        {
-        //            result = depth;
+        //            result = z;
         //        }
 
-        //        var i = depth + (y * this.imgWidth);
+        //        var i = depth + (z * this.deckSize);
         //        //this.sliceMatrix[z][depth][y] = [255, 255, 255, 255];
         //        this.dataTexture.image.data[i * 4] = result;
 
         //    }
         //}
 
-        //for (x = 0; x < this.imgHeight; x++)
+        //for (x = 0; x < this.imgWidth; x++)
         //{
         //    for (z = 0; z < this.deckSize; z++)
         //    {
@@ -99,10 +102,10 @@ TimeSlice.Slicer.prototype = {
 
         //        if (depth > -1 && depth < this.imgHeight)
         //        {
-        //            result = depth;
+        //            result = z;
         //        }
 
-        //        var i = x + (depth * this.imgWidth);
+        //        var i = z + (x * this.imgWidth);
 
         //        //this.sliceMatrix[z][x][depth] = [255, 255, 255, 255];
         //        this.dataTexture.image.data[i * 4] = result;

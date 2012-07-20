@@ -81,6 +81,7 @@ TimeSlice.ToolPanel.prototype = {
         {
             active: false,
             planevis: false,
+            showtex: false,
             posx: 0,
             posy: 0,
             posz: 0,
@@ -94,6 +95,7 @@ TimeSlice.ToolPanel.prototype = {
 
         this.SliceManipulation.add(this.slice, 'active');
         this.SliceManipulation.add(this.slice, 'planevis');
+        this.SliceManipulation.add(this.slice, 'showtex');
         this.SliceManipulation.add(this.slice, 'plopacity', 0.0, 1.0, 0.01);
         this.SliceManipulation.add(this.slice, 'fropacity', 0.0, 1.0, 0.01);
         this.SliceManipulation.add(this.slice, 'slopacity', 0.0, 1.0, 0.01);
@@ -110,6 +112,7 @@ TimeSlice.ToolPanel.prototype = {
         this.frame =
         {
             record: true,
+            save: App.savePanels,
             framecount: 100,
             speed: 200,
             distance: 10,
@@ -117,6 +120,7 @@ TimeSlice.ToolPanel.prototype = {
         };
 
         this.FrameManipulation.add(this.frame, 'record');
+        this.FrameManipulation.add(this.frame, 'save');
         this.FrameManipulation.add(this.frame, 'framecount', 2, 200);
         this.FrameManipulation.add(this.frame, 'speed', 1, 1000);
         this.FrameManipulation.add(this.frame, 'distance', 0, 100);
@@ -141,17 +145,17 @@ TimeSlice.ToolPanel.prototype = {
         var cshadervals =
         {
             active: false,
-            contrast: 0.0,
-            center: 0.0,
-            uncenter: 0
+            contrast: 1.0,
+            brightness: 1.0,
+            saturation: 1.0
         };
 
         this.shaders.push(cshadervals);
 
         ccontrols.add(cshadervals, 'active');
-        ccontrols.add(cshadervals, 'contrast', -1.0, 30.0);
-        ccontrols.add(cshadervals, 'center', -1.0, 1.0);
-        ccontrols.add(cshadervals, 'uncenter', -1.0, 1.0);
+        ccontrols.add(cshadervals, 'contrast', 0.5, 30.0, 0.01);
+        ccontrols.add(cshadervals, 'brightness', 0.5, 10.0, 0.01);
+        ccontrols.add(cshadervals, 'saturation', 0.5, 10.0, 0.01);
         ccontrols.open();
 
         var grayscalecontrols = this.shaderControls.addFolder("grayscale");
@@ -235,9 +239,8 @@ TimeSlice.ToolPanel.prototype = {
         this.SceneBackgroundFolder.open();
         this.CameraManipulation.open();
         this.FrameManipulation.open();
-        //this.SliceManipulation.open();
+        this.SliceManipulation.open();
         this.shaderControls.open();
-
     }
 };
 
