@@ -139,6 +139,12 @@ App = (function() {
 
         sceneRTT.add(meshRTT);
 
+        //this will be the texture for the frame plane
+        var renderTargetTexture = new THREE.WebGLRenderTarget(planeWidth, planeHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat });
+
+        var composerScene = new THREE.EffectComposer(renderer, renderTargetTexture);
+        var sceneRenderPass = new THREE.RenderPass(sceneRTT, cameraRTT);
+
         //create and add the shaders
         var effectBR = new THREE.ShaderPass(TimeSlice.ShaderExtras["brightness"]);
         var effectCO = new THREE.ShaderPass(TimeSlice.ShaderExtras["contrast"]);
@@ -148,12 +154,8 @@ App = (function() {
         var effectIV = new THREE.ShaderPass(TimeSlice.ShaderExtras["invert"]);
         var effectSL = new THREE.ShaderPass(TimeSlice.ShaderExtras["slice"]);
         var effectCA = new THREE.ShaderPass(TimeSlice.ShaderExtras["coloralpha"]);
-
-        //this will be the texture for the frame plane
-        var renderTargetTexture = new THREE.WebGLRenderTarget(planeWidth, planeHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat });
-
-        var composerScene = new THREE.EffectComposer(renderer, renderTargetTexture);
-        var sceneRenderPass = new THREE.RenderPass(sceneRTT, cameraRTT);
+        var effectBL = new THREE.ShaderPass(TimeSlice.ShaderExtras["blur"]);
+        var effectTH = new THREE.ShaderPass(TimeSlice.ShaderExtras["threshold"]);
 
         composerScene.addPass(sceneRenderPass);
         composerScene.addPass(effectBR);
@@ -164,6 +166,9 @@ App = (function() {
         composerScene.addPass(effectIV);
         composerScene.addPass(effectSL);
         composerScene.addPass(effectCA);
+        composerScene.addPass(effectBL);
+        composerScene.addPass(effectTH);
+
 
         //create material from composerScene
         var material;
@@ -202,7 +207,9 @@ App = (function() {
             effectTB: effectTB,
             effectIV: effectIV,
             effectSL: effectSL,
-            effectCA: effectCA
+            effectCA: effectCA,
+            effectBL: effectBL,
+            effectTH: effectTH
         };
 
         //save parts
@@ -259,8 +266,9 @@ App = (function() {
                     planeContainer.effectHS.uniforms.saturation.value = panel.shaders[3].saturation;
 
                     planeContainer.effectTB.uniforms.active.value = panel.shaders[4].active;
-                    planeContainer.effectTB.uniforms.delta1.value = panel.shaders[4].delta1;
-                    planeContainer.effectTB.uniforms.delta2.value = panel.shaders[4].delta2;
+                    planeContainer.effectTB.uniforms.delta1.value = panel.shaders[4].delta;
+                    planeContainer.effectTB.uniforms.delta2.value = panel.shaders[4].delta;
+                    planeContainer.effectTB.uniforms.matrixSize.value = panel.shaders[4].matrixSize;
 
                     planeContainer.effectIV.uniforms.active.value = panel.shaders[5].active;
 
@@ -284,6 +292,13 @@ App = (function() {
                     planeContainer.effectSL.uniforms.frameCount.value = frameCount;
                     //index is the current plane
                     planeContainer.effectSL.uniforms.zindex.value = index;
+
+                    planeContainer.effectBL.uniforms.active.value = panel.shaders[7].active;
+                    planeContainer.effectBL.uniforms.radius.value = panel.shaders[7].radius;
+                    planeContainer.effectBL.uniforms.delta.value = panel.shaders[7].delta;
+                    
+                    planeContainer.effectTH.uniforms.active.value = panel.shaders[8].active;
+                    planeContainer.effectTH.uniforms.amount.value = panel.shaders[8].amount;
 
                     planeContainer.mesh.material.opacity = panel.frame.transparency;
 

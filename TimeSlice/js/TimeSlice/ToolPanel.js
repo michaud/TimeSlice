@@ -192,15 +192,13 @@ TimeSlice.ToolPanel.prototype = {
         var triangleBlurvals =
         {
             active: false,
-            delta1: 0.01,
-            delta2: 0.01
+            delta: 0.01
         };
 
         this.shaders.push(triangleBlurvals);
 
         triangleBlurcontrols.add(triangleBlurvals, 'active');
-        triangleBlurcontrols.add(triangleBlurvals, 'delta1', 0.01, 4.00);
-        triangleBlurcontrols.add(triangleBlurvals, 'delta2', 0.01, 4.00);
+        triangleBlurcontrols.add(triangleBlurvals, 'delta', 0.01, 4.00);
 
         triangleBlurcontrols.open();
 
@@ -235,11 +233,43 @@ TimeSlice.ToolPanel.prototype = {
 
         colorTransparentControls.open();
 
+        var blurcontrols = this.shaderControls.addFolder("blur");
+
+        var blurvals =
+        {
+            active: false,
+            radius: 0.01,
+            delta: 0.01
+        };
+
+        this.shaders.push(blurvals);
+
+        blurcontrols.add(blurvals, 'active');
+        blurcontrols.add(blurvals, 'radius', 0.01, 4.00);
+        blurcontrols.add(blurvals, 'delta', 0.01, 4.00);
+
+        blurcontrols.open();
+
+        var thresholdcontrols = this.shaderControls.addFolder("threshold");
+
+        var thresholdvals =
+        {
+            active: false,
+            amount: 0.01,
+        };
+
+        this.shaders.push(thresholdvals);
+
+        thresholdcontrols.add(thresholdvals, 'active');
+        thresholdcontrols.add(thresholdvals, 'amount', 0.01, 4.00);
+
+        thresholdcontrols.open();
+
 
         this.SceneBackgroundFolder.open();
         this.CameraManipulation.open();
         this.FrameManipulation.open();
-        this.SliceManipulation.open();
+        //this.SliceManipulation.open();
         this.shaderControls.open();
     }
 };
