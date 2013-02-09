@@ -1,0 +1,142 @@
+body
+{
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+    color: #222;
+    background-color: #BBB;
+    font-family: arial;
+    font-size: 100%;
+}
+
+#container
+{
+    margin-left: 227px;
+}
+
+#info .top
+{
+    position: absolute;
+    top: 0px;
+    width: 100%;
+    padding: 5px;
+    text-align: center;
+}
+
+#info a
+{
+    color: #66F;
+    text-decoration: none;
+}
+
+#info a:hover
+{
+    text-decoration: underline;
+}
+
+#info .bottom
+{
+    position: absolute;
+    bottom: 0px;
+    right: 5px;
+    padding: 5px;
+}
+
+#ControlPanel
+{
+    position: absolute;
+    top: 0;
+    background-color: rgba(0,0,0,0.7);
+    padding: 5px 5px 1px 5px;
+    height: 100%;
+}
+
+#ControlPanel fieldset
+{
+    border: 1px solid rgba(255,255,255,0.3);
+    margin: 0 0 5px 0;
+    padding: 0 4px 4px 4px;
+    color: White;
+}
+
+#ControlPanel legend
+{
+    padding: 0 10px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+#ControlPanel label
+{
+    display: block;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+#ControlPanel label span
+{
+    margin-right: 8px;
+    display: inline-block;
+    width: 42px;
+}
+
+#ControlPanel input[type="range"]
+{
+    margin: 0;
+    border: none;
+    background: none;
+    line-height: 12px;
+    vertical-align: text-top;
+    height: 5px;
+    margin: 5px 0 6px 0;
+    display: inline-block;
+    width: 158px;
+}
+
+.toggleButton
+{
+    position: absolute;
+    right: 7px;
+    top: 1px;
+    background: #383838;
+    width: 17px;
+    height: 14px;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+	
+}
+
+.hide {
+	display: none;
+}
+.toggleButton:before
+{
+    content: "^";
+    font-size: 22px;
+    line-height: 20px;
+}
+
+.toggleButton.collapsed:before
+{
+    content: "v";
+    font-size: 17px;
+    position: absolute;
+    top: -6px;
+    left: 4px;
+}
+
+#ControlPanel fieldset
+{
+    display: block;
+    position: relative;
+}
+
+
+#textureMonitor {
+	width: 40px;
+	height: 30px;
+	position: absolute;
+	top: 5px;
+	left: 5px;
+}
