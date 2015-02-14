@@ -502,9 +502,11 @@ App = (function() {
                 autoClear: false,	// to allow screenshot
                 alpha: true
             });
+            console.log("WebGLRenderer");
         }
         else {
             newRenderer = new THREE.CanvasRenderer();
+            console.log("CanvasRenderer");
         }
 
         newRenderer.setSize(window.innerWidth, window.innerHeight);
